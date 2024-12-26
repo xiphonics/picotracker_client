@@ -18,35 +18,37 @@ class PicoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 754,
-      width: 904,
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage(
-            'assets/images/bezel-brd-2.png',
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Text("picoTracker",
+              style: Theme.of(context).textTheme.headlineLarge),
+        ),
+        SizedBox(
+          height: 754,
+          width: 904,
+          child: Padding(
+            padding: const EdgeInsets.only(
+                top: 100, bottom: 98, left: 60, right: 75),
+            child: Container(
+              height: 320 * 2,
+              width: 240 * 2,
+              color: Colors.black,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: grid
+                    .getRows()
+                    .map((row) => ScreenCharRow(
+                          row,
+                          grid,
+                        ))
+                    .toList(),
+              ),
+            ),
           ),
         ),
-      ),
-      child: Padding(
-        padding:
-            const EdgeInsets.only(top: 100, bottom: 98, left: 60, right: 75),
-        child: Container(
-          height: 320 * 2,
-          width: 240 * 2,
-          color: Colors.black,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: grid
-                .getRows()
-                .map((row) => ScreenCharRow(
-                      row,
-                      grid,
-                    ))
-                .toList(),
-          ),
-        ),
-      ),
+      ],
     );
   }
 }
