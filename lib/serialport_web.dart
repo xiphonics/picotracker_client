@@ -14,7 +14,12 @@ class SerialPortHandler {
 
   void chooseSerialDevice() async {
     try {
-      port = await requestWebSerialPort();
+      // Create filter options for specific vendor ID
+      final filters = [
+        JSFilterObject(usbVendorId: 0xcafe, usbProductId: 0x4009)
+      ];
+
+      port = await requestWebSerialPort(filters.toJS);
       debugPrint("got serial port: $port");
     } catch (e) {
       debugPrint(e.toString());
