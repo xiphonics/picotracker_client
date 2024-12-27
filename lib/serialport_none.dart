@@ -4,4 +4,6 @@ class SerialPortHandler {
   SerialPortHandler(CmdBuilder cmdBuilder);
 
   void chooseSerialDevice() async {}
+
+  bool isConnected() => false;
 }
