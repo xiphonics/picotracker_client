@@ -45,6 +45,6 @@ flutter:
     - family: Hourglass
       fonts:
         - asset: assets/fonts/Hourglass.ttf
-    - family: You Squared
+    - family: YouSquared
       fonts:
         - asset: assets/fonts/YouSquared.ttf

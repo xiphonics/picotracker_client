@@ -1,16 +1,39 @@
 // ignore_for_file: constant_identifier_names, avoid_print
 
 import 'dart:async';
+import 'package:picotracker_client/pico_app.dart';
 
 import 'commands.dart';
 
+const REMOTE_COMMAND_MARKER = 0xFE;
+const REMOTE_COMMAND_TEXT = 0x02;
+const REMOTE_COMMAND_CLEAR = 0x03;
+const REMOTE_COMMAND_SET_COLOUR = 0x04;
+const REMOTE_COMMAND_SET_FONT = 0x05;
+
 enum CommandType {
-  DRAW(4),
-  CLEAR(1),
-  COLOUR(1);
+  TEXT(4),
+  CLEAR(3),
+  SET_COLOUR(3),
+  SET_FONT(3);
 
   const CommandType(this.paramCount);
   final int paramCount;
+
+  static CommandType? fromMarkerByte(int byte) {
+    switch (byte) {
+      case REMOTE_COMMAND_TEXT:
+        return CommandType.TEXT;
+      case REMOTE_COMMAND_CLEAR:
+        return CommandType.CLEAR;
+      case REMOTE_COMMAND_SET_COLOUR:
+        return CommandType.SET_COLOUR;
+      case REMOTE_COMMAND_SET_FONT:
+        return CommandType.SET_FONT;
+      default:
+        return null;
+    }
+  }
 }
 
 class CmdBuilder {
@@ -22,28 +45,15 @@ class CmdBuilder {
   Stream<Command> get commands => _commandStreamController.stream;
 
   void addByte(int byte) {
-    if (byte == 0xFD) {
+    if (byte == REMOTE_COMMAND_MARKER) {
       if (cmdStarted) {
         print("INCOMPLETE CMD:[$_type] $_byteBuffer");
       }
       _reset();
       cmdStarted = true;
     } else if (_type == null && cmdStarted) {
-      switch (byte) {
-        case 0x32:
-          _type = CommandType.DRAW;
-          break;
-        case 0x33:
-          _type = CommandType.CLEAR;
-          break;
-        case 0x34:
-          _type = CommandType.COLOUR;
-          break;
-        default:
-          print("INVALID COMMAND TYPE!!!!! [$byte]");
-      }
-    }
-    else {
+      _type = CommandType.fromMarkerByte(byte);
+    } else {
       if (cmdStarted) {
         _byteBuffer.add(byte);
       }
@@ -54,14 +64,14 @@ class CmdBuilder {
   // build command if we have all the bytes for it
   void _build() {
     switch (_type) {
-      case CommandType.DRAW:
+      case CommandType.TEXT:
         if (_byteBuffer.length == _type!.paramCount) {
           final cmd = DrawCmd(
             char: _byteBuffer[0],
             // x & y co-ords are 1 indexed to avoid sending null chars in the serial data
             x: _byteBuffer[1] - ASCII_SPACE_OFFSET,
             y: _byteBuffer[2] - ASCII_SPACE_OFFSET,
-            invert: _byteBuffer[3] == 127,
+            invert: _byteBuffer[3] == INVERT_ON,
           );
           _reset();
           if (cmd.x > 31 || cmd.y > 23) {
@@ -73,16 +83,44 @@ class CmdBuilder {
         break;
       case CommandType.CLEAR:
         if (_byteBuffer.length == _type!.paramCount) {
-          final cmd = ClearCmd(colour: _byteBuffer[0] - ASCII_SPACE_OFFSET);
+          final cmd = ClearCmd(
+            // convert from 565 RGB to 888 RGB
+            // ref: https://stackoverflow.com/a/9069480/85472
+            r: (_byteBuffer[0] * 527 + 23) >> 5, // Red component
+            g: (_byteBuffer[1] * 259 + 33) >> 6, // Green component
+            b: (_byteBuffer[2] * 527 + 23) >> 5, // Blue component
+          );
+          _commandStreamController.add(cmd);
+          _reset();
+        } else {
+          print("BAD CLEAR DATA:$_byteBuffer");
+        }
+        break;
+      case CommandType.SET_COLOUR:
+        if (_byteBuffer.length == _type!.paramCount) {
+          final cmd = ColourCmd(
+            // convert from 565 RGB to 888 RGB
+            // ref: https://stackoverflow.com/a/9069480/85472
+            r: (_byteBuffer[0] * 527 + 23) >> 5, // Red component
+            g: (_byteBuffer[1] * 259 + 33) >> 6, // Green component
+            b: (_byteBuffer[2] * 527 + 23) >> 5, // Blue component
+          );
           _commandStreamController.add(cmd);
           _reset();
         }
         break;
-      case CommandType.COLOUR:
-        if (_byteBuffer.length == _type!.paramCount) {
-          final cmd = ColourCmd(colour: _byteBuffer[0] - ASCII_SPACE_OFFSET);
+      case CommandType.SET_FONT:
+        if (_byteBuffer.length != 1) {
+          print("BAD FONT DATA:$_byteBuffer");
+          break;
+        }
+        final index = _byteBuffer[0] - ASCII_SPACE_OFFSET;
+        if (index < PtFont.values.length) {
+          final cmd = FontCmd(index: index);
           _commandStreamController.add(cmd);
           _reset();
+        } else {
+          print("BAD FONT INDEX:$index");
         }
         break;
       case null:

@@ -47,12 +47,12 @@ class ScreenCharGrid {
     _gridlist = List.filled(COLS * ROWS, GridCell(0, _backgroundColor, false));
   }
 
-  void setColor(int c) {
-    _currentColour = colorPalette[c];
+  void setColor(int r, int g, int b) {
+    _currentColour = Color.fromRGBO(r, g, b, 1);
   }
 
-  void setBackground(int c) {
-    _backgroundColor = Color(c);
+  void setBackground(int r, int g, int b) {
+    _backgroundColor = Color.fromRGBO(r, g, b, 1);
   }
 
   List<List<GridCell>> getRows() {

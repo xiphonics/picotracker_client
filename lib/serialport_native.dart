@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:udev/udev.dart';
 
 import 'package:flutter_libserialport/flutter_libserialport.dart';
@@ -37,7 +38,7 @@ class SerialPortHandler {
   }
 
   void _initPort() {
-    print("Init Port");
+    debugPrint("Init Port");
     try {
       port = SerialPort(portname);
       port!.openReadWrite();
@@ -47,7 +48,7 @@ class SerialPortHandler {
 
   Future<void> _listenPort() async {
     if (port == null) {
-      print("null port can't listen");
+      debugPrint("null port can't listen");
       return;
     }
     SerialPortReader reader = SerialPortReader(port!, timeout: 20);
