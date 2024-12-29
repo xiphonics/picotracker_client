@@ -7,7 +7,7 @@ import 'dart:js_interop';
 import 'command_builder.dart';
 
 const PICOTRACKER_VENDOR_ID = 0x2E8A;
-const PICOTRACKER_PRODUCT_ID = 0x0003;
+const PICOTRACKER_PRODUCT_ID = 0x000A;
 
 class SerialPortHandler {
   final CmdBuilder cmdBuilder;
