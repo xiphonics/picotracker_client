@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       - name: Build web app
-        run: flutter build web --release --base-href /
+        run: flutter build web --release --dart-define=BUILD_NUMBER=${{ github.run_number }} --base-href /
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
