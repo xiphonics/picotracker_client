@@ -20,13 +20,12 @@ class PicoApp extends StatelessWidget {
     return ListenableBuilder(
       builder: (BuildContext context, Widget? child) {
         return MaterialApp(
-          title: 'picoTracker',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
             fontFamily: fontNotifier.value.name,
           ),
-          home: const MainScreen(title: 'picoTracker'),
+          home: const MainScreen(),
         );
       },
       listenable: fontNotifier,

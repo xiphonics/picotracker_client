@@ -10,20 +10,27 @@ final KEY_RIGHT = int.parse("100", radix: 2);
 final KEY_UP = int.parse("1000", radix: 2);
 final KEY_L = int.parse("10000", radix: 2);
 
+const buildVersion = String.fromEnvironment('BUILD_NUMBER');
+
 class PicoScreen extends StatelessWidget {
   final ScreenCharGrid grid;
   final Color backgroundColor;
+  final bool connected;
 
-  const PicoScreen(this.grid, this.backgroundColor, {super.key});
+  const PicoScreen(this.grid, this.backgroundColor,
+      {super.key, required this.connected});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: Text("picoTracker",
-              style: Theme.of(context).textTheme.headlineLarge),
+        Visibility(
+          visible: !connected,
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Text("picoTracker Client  [build $buildVersion]",
+                style: Theme.of(context).textTheme.headlineSmall),
+          ),
         ),
         SizedBox(
           height: 754,

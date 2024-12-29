@@ -17,7 +17,7 @@ class SerialPortHandler {
   SerialPortHandler(this.cmdBuilder);
 
   void chooseSerialDevice() async {
-    //TODO, for now just use hardcoded port
+    // for now just use hardcoded port
     try {
       SerialPort(portname).close();
       _initPort();

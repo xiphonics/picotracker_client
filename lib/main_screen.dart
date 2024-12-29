@@ -12,9 +12,7 @@ import 'pico_app.dart';
 import 'widgets/pico_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key, required this.title});
-
-  final String title;
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -66,7 +64,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("connected: ${serialHandler.isConnected}");
     return Scaffold(
         backgroundColor: Colors.black,
         body: Stack(
@@ -74,6 +71,7 @@ class _MainScreenState extends State<MainScreen> {
             PicoScreen(
               _grid,
               _grid.background,
+              connected: serialHandler.isConnected(),
             ),
             Visibility(
               visible: !serialHandler.isConnected(),

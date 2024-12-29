@@ -1,8 +1,13 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:flutter/foundation.dart';
 import 'package:webserial/webserial.dart';
 import 'dart:js_interop';
 
 import 'command_builder.dart';
+
+const PICOTRACKER_VENDOR_ID = 0x2E8A;
+const PICOTRACKER_PRODUCT_ID = 0x0003;
 
 class SerialPortHandler {
   final CmdBuilder cmdBuilder;
@@ -16,7 +21,10 @@ class SerialPortHandler {
     try {
       // Create filter options for specific vendor ID
       final filters = [
-        JSFilterObject(usbVendorId: 0xcafe, usbProductId: 0x4009)
+        JSFilterObject(
+          usbVendorId: PICOTRACKER_VENDOR_ID,
+          usbProductId: PICOTRACKER_PRODUCT_ID,
+        )
       ];
 
       port = await requestWebSerialPort(filters.toJS);
