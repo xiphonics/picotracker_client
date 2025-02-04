@@ -84,11 +84,9 @@ class CmdBuilder {
       case CommandType.CLEAR:
         if (_byteBuffer.length == _type!.paramCount) {
           final cmd = ClearCmd(
-            // convert from 565 RGB to 888 RGB
-            // ref: https://stackoverflow.com/a/9069480/85472
-            r: (_byteBuffer[0] * 527 + 23) >> 5, // Red component
-            g: (_byteBuffer[1] * 259 + 33) >> 6, // Green component
-            b: (_byteBuffer[2] * 527 + 23) >> 5, // Blue component
+            r: _byteBuffer[0],
+            g: _byteBuffer[1],
+            b: _byteBuffer[2],
           );
           _commandStreamController.add(cmd);
           _reset();
@@ -99,11 +97,9 @@ class CmdBuilder {
       case CommandType.SET_COLOUR:
         if (_byteBuffer.length == _type!.paramCount) {
           final cmd = ColourCmd(
-            // convert from 565 RGB to 888 RGB
-            // ref: https://stackoverflow.com/a/9069480/85472
-            r: (_byteBuffer[0] * 527 + 23) >> 5, // Red component
-            g: (_byteBuffer[1] * 259 + 33) >> 6, // Green component
-            b: (_byteBuffer[2] * 527 + 23) >> 5, // Blue component
+            r: _byteBuffer[0],
+            g: _byteBuffer[1],
+            b: _byteBuffer[2],
           );
           _commandStreamController.add(cmd);
           _reset();
