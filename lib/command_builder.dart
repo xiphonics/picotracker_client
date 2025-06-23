@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, avoid_print
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:picotracker_client/pico_app.dart';
 
 import 'commands.dart';
@@ -10,6 +11,10 @@ const REMOTE_COMMAND_TEXT = 0x02;
 const REMOTE_COMMAND_CLEAR = 0x03;
 const REMOTE_COMMAND_SET_COLOUR = 0x04;
 const REMOTE_COMMAND_SET_FONT = 0x05;
+
+// Byte escaping constants
+const REMOTE_UI_ESC_CHAR = 0xFD;
+const REMOTE_UI_ESC_XOR = 0x20;
 
 enum CommandType {
   TEXT(4),
@@ -40,15 +45,34 @@ class CmdBuilder {
   CommandType? _type;
   final List<int> _byteBuffer = [];
   bool cmdStarted = false;
+  bool escapeNext = false; // Flag to indicate if the next byte should be unescaped
   final _commandStreamController = StreamController<Command>.broadcast();
 
   Stream<Command> get commands => _commandStreamController.stream;
 
   void addByte(int byte) {
-    if (byte == REMOTE_COMMAND_MARKER) {
+    // Handle byte escaping
+    if (escapeNext) {
+      // Unescape the byte by XORing with REMOTE_UI_ESC_XOR
+      byte = byte ^ REMOTE_UI_ESC_XOR;
+      escapeNext = false;
+      
+      // Add the unescaped byte to the buffer
       if (cmdStarted) {
-        print("INCOMPLETE CMD:[$_type] $_byteBuffer");
+        _byteBuffer.add(byte);
       }
+      _build();
+      return;
+    }
+    
+    // Check for escape character
+    if (byte == REMOTE_UI_ESC_CHAR) {
+      escapeNext = true;
+      return;
+    }
+    
+    // Normal command processing
+    if (byte == REMOTE_COMMAND_MARKER) {
       _reset();
       cmdStarted = true;
     } else if (_type == null && cmdStarted) {
@@ -75,7 +99,7 @@ class CmdBuilder {
           );
           _reset();
           if (cmd.x > 31 || cmd.y > 23) {
-            print("BAD DRAW DATA:${cmd.x} ${cmd.y} [${cmd.char}]");
+            debugPrint("BAD DRAW DATA:${cmd.x} ${cmd.y} [${cmd.char}]");
           } else {
             _commandStreamController.add(cmd);
           }
@@ -91,23 +115,26 @@ class CmdBuilder {
           _commandStreamController.add(cmd);
           _reset();
         } else {
-          print("BAD CLEAR DATA:$_byteBuffer");
+          debugPrint("BAD CLEAR DATA:$_byteBuffer");
         }
         break;
       case CommandType.SET_COLOUR:
         if (_byteBuffer.length == _type!.paramCount) {
-          final cmd = ColourCmd(
-            r: _byteBuffer[0],
-            g: _byteBuffer[1],
-            b: _byteBuffer[2],
-          );
+          final r = _byteBuffer[0];
+          final g = _byteBuffer[1];
+          final b = _byteBuffer[2];
+          
+          debugPrint(
+              "COLOR CMD: Received RGB bytes: 0x${r.toRadixString(16).padLeft(2, '0').toUpperCase()} ($r), 0x${g.toRadixString(16).padLeft(2, '0').toUpperCase()} ($g), 0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()} ($b)");
+          
+          final cmd = ColourCmd(r: r, g: g, b: b);
           _commandStreamController.add(cmd);
           _reset();
         }
         break;
       case CommandType.SET_FONT:
         if (_byteBuffer.length != 1) {
-          print("BAD FONT DATA:$_byteBuffer");
+          debugPrint("BAD FONT DATA:$_byteBuffer");
           break;
         }
         final index = _byteBuffer[0] - ASCII_SPACE_OFFSET;
@@ -116,7 +143,7 @@ class CmdBuilder {
           _commandStreamController.add(cmd);
           _reset();
         } else {
-          print("BAD FONT INDEX:$index");
+          debugPrint("BAD FONT INDEX:$index");
         }
         break;
       case null:
@@ -128,5 +155,6 @@ class CmdBuilder {
     _byteBuffer.clear();
     _type = null;
     cmdStarted = false;
+    escapeNext = false; // Reset the escape flag
   }
 }
