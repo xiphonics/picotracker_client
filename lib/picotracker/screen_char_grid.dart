@@ -48,7 +48,19 @@ class ScreenCharGrid {
   }
 
   void setColor(int r, int g, int b) {
-    _currentColour = Color.fromRGBO(r, g, b, 1);
+    // Convert from RGB888 to RGB565 and back to simulate the ST7789 display's color mapping
+    // RGB565: 5 bits R, 6 bits G, 5 bits B
+    final r565 = (r >> 3) & 0x1F; // 5 bits for red
+    final g565 = (g >> 2) & 0x3F; // 6 bits for green
+    final b565 = (b >> 3) & 0x1F; // 5 bits for blue
+  
+    // Convert back to RGB888
+    final r888 = (r565 << 3) | (r565 >> 2); // Expand 5 bits to 8 bits
+    final g888 = (g565 << 2) | (g565 >> 4); // Expand 6 bits to 8 bits
+    final b888 = (b565 << 3) | (b565 >> 2); // Expand 5 bits to 8 bits
+  
+    final color = Color.fromRGBO(r888, g888, b888, 1);
+    _currentColour = color;
   }
 
   void setBackground(int r, int g, int b) {

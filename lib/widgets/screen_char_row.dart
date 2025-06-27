@@ -17,6 +17,12 @@ class ScreenCharRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: rowChars.map((cell) {
         bool isInvertedSpaceChar = cell.char == " " && cell.invert;
+        
+        // Debug the color values being used in the UI
+        final textColor = isInvertedSpaceChar
+            ? cell.color
+            : (cell.invert ? grid.background : cell.color);
+        
         return Text(
           // need this ugly hack due to open Flutter bug:
           // https://github.com/flutter/flutter/issues/112766
@@ -26,9 +32,7 @@ class ScreenCharRow extends StatelessWidget {
                 height: 1.2,
                 letterSpacing: 1,
                 fontSize: 19,
-                color: isInvertedSpaceChar
-                    ? cell.color
-                    : (cell.invert ? grid.background : cell.color),
+                color: textColor,
                 backgroundColor: isInvertedSpaceChar
                     ? cell.color
                     : (cell.invert ? cell.color : grid.background),
