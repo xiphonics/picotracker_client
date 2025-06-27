@@ -41,6 +41,8 @@ class _MainScreenState extends State<MainScreen> {
             _grid.setChar((x: cmd.x, y: cmd.y), cmd.char, cmd.invert);
             break;
           case ClearCmd():
+            // Clear command also sets the background color
+            _grid.setBackground(cmd.r, cmd.g, cmd.b);
             _grid.clear();
             break;
           case ColourCmd():
