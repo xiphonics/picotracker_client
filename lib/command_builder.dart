@@ -124,9 +124,6 @@ class CmdBuilder {
           final g = _byteBuffer[1];
           final b = _byteBuffer[2];
           
-          debugPrint(
-              "COLOR CMD: Received RGB bytes: 0x${r.toRadixString(16).padLeft(2, '0').toUpperCase()} ($r), 0x${g.toRadixString(16).padLeft(2, '0').toUpperCase()} ($g), 0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()} ($b)");
-          
           final cmd = ColourCmd(r: r, g: g, b: b);
           _commandStreamController.add(cmd);
           _reset();

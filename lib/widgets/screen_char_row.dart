@@ -90,11 +90,16 @@ class ScreenCharRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: rowChars.map((cell) {
         final isInvertedSpaceChar = cell.char == " " && cell.invert;
-        final backgroundColor = isInvertedSpaceChar
-            ? cell.color
+        
+        // For inverted space characters, use the cell's color as background
+        // For regular characters, use the grid's background unless inverted
+        final backgroundColor = isInvertedSpaceChar 
+            ? cell.color 
             : (cell.invert ? cell.color : grid.background);
-        final textColor = isInvertedSpaceChar
-            ? cell.color
+            
+        // Text color is the inverse of the background when inverted
+        final textColor = isInvertedSpaceChar 
+            ? cell.color 
             : (cell.invert ? grid.background : cell.color);
         
         return CustomPaint(
