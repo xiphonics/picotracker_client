@@ -9,6 +9,10 @@ import 'command_builder.dart';
 const PICOTRACKER_VENDOR_ID = 0x2E8A;
 const PICOTRACKER_PRODUCT_ID = 0x000A;
 
+// OpenMoko, Inc. PicoTracker Advance
+const PICOTRACKERADVANCE_VENDOR_ID = 0x1D50;
+const PICOTRACKERADVANCE_PRODUCT_ID = 0x6192;
+
 class SerialPortHandler {
   final CmdBuilder cmdBuilder;
   JSSerialPort? port;
@@ -24,6 +28,10 @@ class SerialPortHandler {
         JSFilterObject(
           usbVendorId: PICOTRACKER_VENDOR_ID,
           usbProductId: PICOTRACKER_PRODUCT_ID,
+        ),
+        JSFilterObject(
+          usbVendorId: PICOTRACKERADVANCE_VENDOR_ID,
+          usbProductId: PICOTRACKERADVANCE_PRODUCT_ID,
         )
       ];
 
