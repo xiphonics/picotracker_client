@@ -48,3 +48,6 @@ flutter:
     - family: YouSquared
       fonts:
         - asset: assets/fonts/YouSquared.ttf
+    - family: Ubuntu Mono Font
+      fonts:
+        - asset: assets/fonts/UbuntuMono-Regular.ttf
