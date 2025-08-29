@@ -15,8 +15,6 @@ const PICOTRACKERADVANCE_PRODUCT_ID = 0x6192;
 
 bool _isAdvance = false;
 
-bool isAdvance() => _isAdvance;
-
 class SerialPortHandler {
   final CmdBuilder cmdBuilder;
   JSSerialPort? port;
@@ -24,6 +22,8 @@ class SerialPortHandler {
   SerialPortHandler(this.cmdBuilder);
 
   bool isConnected() => port?.connected.toDart ?? false;
+
+  bool isAdvance() => _isAdvance;
 
   void chooseSerialDevice() async {
     try {
