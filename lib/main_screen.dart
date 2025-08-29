@@ -49,7 +49,8 @@ class _MainScreenState extends State<MainScreen> {
             _grid.setColor(cmd.r, cmd.g, cmd.b);
             break;
           case FontCmd():
-            fontNotifier.value = PtFont.values[cmd.index];
+            final offset = serialHandler.isAdvance() ? AdvFontOffSet : 0;
+            fontNotifier.value = PtFont.values[cmd.index + offset];
             break;
         }
       });

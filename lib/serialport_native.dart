@@ -37,6 +37,9 @@ class SerialPortHandler {
     }
   }
 
+  // TODO:
+  bool isAdvance() => false;
+
   void _initPort() {
     debugPrint("Init Port");
     try {

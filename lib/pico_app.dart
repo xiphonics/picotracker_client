@@ -3,9 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:picotracker_client/main_screen.dart';
 
+const AdvFontOffSet = 2;
+
 enum PtFont {
   Hourglass,
   YouSquared,
+  Ubuntu_Mono,
 }
 
 final fontNotifier = ValueNotifier<PtFont>(PtFont.Hourglass);
@@ -23,7 +26,7 @@ class PicoApp extends StatelessWidget {
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
-            fontFamily: fontNotifier.value.name,
+            fontFamily: fontNotifier.value.name.replaceAll("_", " "),
           ),
           home: const MainScreen(),
         );

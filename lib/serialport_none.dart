@@ -6,4 +6,6 @@ class SerialPortHandler {
   void chooseSerialDevice() async {}
 
   bool isConnected() => false;
+
+  bool isAdvance() => false;
 }

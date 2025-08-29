@@ -268,10 +268,10 @@ packages:
     dependency: "direct main"
     description:
       name: webserial
-      sha256: "5845d455033153939b12307bb1e33b676bd2f01faf57e436f70a5df7a091081c"
+      sha256: b39c2175190ee1c75e996bf137bfee3e3e8fd06ee0ec24f0d3c10bdf7b323786
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.0"
 sdks:
   dart: ">=3.8.0-0 <4.0.0"
   flutter: ">=3.18.0-18.0.pre.54"
