@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:picotracker_client/picotracker/screen_char_grid.dart';
 import '../commands.dart';
+import '../main_screen.dart';
 
 class CharacterPainter extends CustomPainter {
   final String character;
@@ -71,11 +72,6 @@ class CharacterPainter extends CustomPainter {
 }
 
 class ScreenCharRow extends StatelessWidget {
-  // Increased width for more horizontal spacing
-  static const double charWidth = 16.0;
-  static const double charHeight = 22.0;
-  static const double fontSize = 22.0;
-
   final List<GridCell> rowChars;
   final ScreenCharGrid grid;
 
@@ -85,6 +81,12 @@ class ScreenCharRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final fontFamily = theme.textTheme.titleLarge?.fontFamily ?? 'monospace';
+
+    // Increased width for more horizontal spacing
+    final isAdvance = serialHandler.isAdvance();
+    double charWidth = isAdvance ? 12.0 : 16.0;
+    double charHeight = isAdvance ? 20.0 : 22.0;
+    double fontSize = isAdvance ? 22.0 : 16.0;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -103,7 +105,7 @@ class ScreenCharRow extends StatelessWidget {
             : (cell.invert ? grid.background : cell.color);
 
         return CustomPaint(
-          size: const Size(charWidth, charHeight),
+          size: Size(charWidth, charHeight),
           painter: CharacterPainter(
             character: isInvertedSpaceChar ? "\u2588" : cell.char,
             color: textColor,
