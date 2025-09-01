@@ -8,8 +8,14 @@ The webapp [is available here](https://xiphonics.github.io/picotracker_client/).
 
 ## Getting Started
 
-Connect picotracker to usb port. On linux this will probably be `/dev/ttyACM0`
-You will need to switch between any 2 screens on the picotracker to "initialise" the display on the app.
+Connect picotracker to a usb port.
+
+Run the Flutter web app using: 
+`flutter run -d web lib/main.dart`
+
+In VSCode, with Flutter extension installed just press `F5` to run udner a debugger.
+
+The production application is deployed to: https://ui.xiphonics.com/ via GitHub Actions.
 
 ## Supported Platforms
 
@@ -21,10 +27,10 @@ You will need to switch between any 2 screens on the picotracker to "initialise"
 
 - [X] display fg/bg colours
 - [X] webapp version
-- [ ] use palette (custom colours) send from picotracker ([once supported by remoteui protocol](https://github.com/xiphonics/picoTracker/issues/263))
+- [X] use palette (custom colours) send from picotracker ([once supported by remoteui protocol](https://github.com/xiphonics/picoTracker/issues/263))
 - [X] implement notes blank *background* display of Song screen
 - [ ] reconnect port on picotracker reset (on load new project)
 - [ ] set initial window size
 - [ ] show usb port connection status
 - [X] app setting for USB port device name
-- [ ] request refresh on connect ([once supported by remoteui protocol](https://github.com/xiphonics/picoTracker/issues/263))
+- [X] request refresh on connect ([once supported by remoteui protocol](https://github.com/xiphonics/picoTracker/issues/263))

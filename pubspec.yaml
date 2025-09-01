@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_libserialport: ^0.4.0
-  webserial: ^1.1.0
+  webserial: ^1.2.0
   udev: ^0.0.3
 
 dev_dependencies:
@@ -48,3 +48,6 @@ flutter:
     - family: YouSquared
       fonts:
         - asset: assets/fonts/YouSquared.ttf
+    - family: Ubuntu Mono
+      fonts:
+        - asset: assets/fonts/UbuntuMono-Regular.ttf

@@ -11,6 +11,9 @@ import 'commands.dart';
 import 'pico_app.dart';
 import 'widgets/pico_screen.dart';
 
+// just simple global for now
+late final SerialPortHandler serialHandler;
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -25,7 +28,6 @@ class _MainScreenState extends State<MainScreen> {
   StreamSubscription? cmdStreamSubscription;
   final _grid = ScreenCharGrid();
   final cmdBuilder = CmdBuilder();
-  late final SerialPortHandler serialHandler;
 
   StreamSubscription? usbUdevStream;
 
@@ -49,7 +51,8 @@ class _MainScreenState extends State<MainScreen> {
             _grid.setColor(cmd.r, cmd.g, cmd.b);
             break;
           case FontCmd():
-            fontNotifier.value = PtFont.values[cmd.index];
+            final offset = serialHandler.isAdvance() ? AdvFontOffSet : 0;
+            fontNotifier.value = PtFont.values[cmd.index + offset];
             break;
         }
       });

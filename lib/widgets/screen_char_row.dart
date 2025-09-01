@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:picotracker_client/picotracker/screen_char_grid.dart';
 import '../commands.dart';
+import '../main_screen.dart';
 
 class CharacterPainter extends CustomPainter {
   final String character;
@@ -18,7 +19,7 @@ class CharacterPainter extends CustomPainter {
     required this.color,
     required this.backgroundColor,
     required this.fontFamily,
-    this.fontSize = 16.0,
+    required this.fontSize,
   });
 
   @override
@@ -27,7 +28,7 @@ class CharacterPainter extends CustomPainter {
     final bgPaint = Paint()
       ..color = backgroundColor
       ..isAntiAlias = false; // Disable anti-aliasing for background
-    
+
     // Draw background with 0.5 pixel inset to ensure full coverage
     canvas.drawRect(
       Rect.fromLTWH(-0.5, -0.5, size.width + 1, size.height + 1),
@@ -48,13 +49,13 @@ class CharacterPainter extends CustomPainter {
       text: TextSpan(text: character, style: textStyle),
       textDirection: TextDirection.ltr,
     );
-    
+
     textPainter.layout();
-    
+
     // Calculate the center offset
     final centerX = (size.width - textPainter.width) / 2;
     final centerY = (size.height - textPainter.height) / 2;
-    
+
     // Draw the text centered in the cell
     textPainter.paint(
       canvas,
@@ -62,20 +63,15 @@ class CharacterPainter extends CustomPainter {
     );
   }
 
-
   @override
   bool shouldRepaint(CharacterPainter oldDelegate) {
     return oldDelegate.character != character ||
-           oldDelegate.color != color ||
-           oldDelegate.backgroundColor != backgroundColor;
+        oldDelegate.color != color ||
+        oldDelegate.backgroundColor != backgroundColor;
   }
 }
 
 class ScreenCharRow extends StatelessWidget {
-  static const double charWidth = 18.0; // Increased width for more horizontal spacing
-  static const double charHeight = 20.0;
-  static const double fontSize = 16.0;
-
   final List<GridCell> rowChars;
   final ScreenCharGrid grid;
 
@@ -85,25 +81,31 @@ class ScreenCharRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final fontFamily = theme.textTheme.titleLarge?.fontFamily ?? 'monospace';
-    
+
+    // Increased width for more horizontal spacing
+    final isAdvance = serialHandler.isAdvance();
+    double charWidth = isAdvance ? 12.0 : 16.0;
+    double charHeight = isAdvance ? 20.0 : 22.0;
+    double fontSize = isAdvance ? 22.0 : 16.0;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: rowChars.map((cell) {
         final isInvertedSpaceChar = cell.char == " " && cell.invert;
-        
+
         // For inverted space characters, use the cell's color as background
         // For regular characters, use the grid's background unless inverted
-        final backgroundColor = isInvertedSpaceChar 
-            ? cell.color 
+        final backgroundColor = isInvertedSpaceChar
+            ? cell.color
             : (cell.invert ? cell.color : grid.background);
-            
+
         // Text color is the inverse of the background when inverted
-        final textColor = isInvertedSpaceChar 
-            ? cell.color 
+        final textColor = isInvertedSpaceChar
+            ? cell.color
             : (cell.invert ? grid.background : cell.color);
-        
+
         return CustomPaint(
-          size: const Size(charWidth, charHeight),
+          size: Size(charWidth, charHeight),
           painter: CharacterPainter(
             character: isInvertedSpaceChar ? "\u2588" : cell.char,
             color: textColor,

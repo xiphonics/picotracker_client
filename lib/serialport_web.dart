@@ -13,6 +13,8 @@ const PICOTRACKER_PRODUCT_ID = 0x000A;
 const PICOTRACKERADVANCE_VENDOR_ID = 0x1D50;
 const PICOTRACKERADVANCE_PRODUCT_ID = 0x6192;
 
+bool _isAdvance = false;
+
 class SerialPortHandler {
   final CmdBuilder cmdBuilder;
   JSSerialPort? port;
@@ -20,6 +22,8 @@ class SerialPortHandler {
   SerialPortHandler(this.cmdBuilder);
 
   bool isConnected() => port?.connected.toDart ?? false;
+
+  bool isAdvance() => _isAdvance;
 
   void chooseSerialDevice() async {
     try {
@@ -58,6 +62,10 @@ class SerialPortHandler {
           .toDart;
 
       debugPrint("port opened: ${port?.readable}");
+      if (port?.getInfo().usbVendorId == PICOTRACKERADVANCE_VENDOR_ID &&
+          port?.getInfo().usbProductId == PICOTRACKERADVANCE_PRODUCT_ID) {
+        _isAdvance = true;
+      }
     } else {
       debugPrint("port already opened: ${port?.readable}");
     }
