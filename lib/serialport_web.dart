@@ -74,7 +74,13 @@ class SerialPortHandler {
 
     if (port != null) {
       debugPrint("port opened: ${port?.readable}");
-      
+      // request full screen refresh after opening
+      final request = Uint8List.fromList([REMOTE_COMMAND_MARKER, 0x02]);
+      final JSUint8Array jsReq = request.toJS;
+      final writer = port?.writable?.getWriter();
+      writer?.write(jsReq);
+      // Allow the serial port to be closed later.
+      writer?.releaseLock();
     }
 
     while (true) {
