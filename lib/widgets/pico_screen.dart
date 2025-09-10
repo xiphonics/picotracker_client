@@ -1,55 +1,101 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 import 'package:flutter/material.dart';
+import 'package:picotracker_client/pico_app.dart';
 import 'package:picotracker_client/picotracker/screen_char_grid.dart';
-import 'package:picotracker_client/widgets/screen_char_row.dart';
-
 import '../commands.dart';
-
-final KEY_LEFT = int.parse("1", radix: 2);
-final KEY_DOWN = int.parse("10", radix: 2);
-final KEY_RIGHT = int.parse("100", radix: 2);
-final KEY_UP = int.parse("1000", radix: 2);
-final KEY_L = int.parse("10000", radix: 2);
+import '../main_screen.dart';
 
 const buildVersion = String.fromEnvironment('BUILD_NUMBER');
 
-class RectanglePainter extends CustomPainter {
-  final List<DrawRectCmd> rects;
+class PicoScreenPainter extends CustomPainter {
   final ScreenCharGrid grid;
+  final List<DrawRectCmd> rects;
   final bool isAdvance;
 
-  RectanglePainter(this.rects, this.grid, this.isAdvance);
+  PicoScreenPainter({
+    required this.grid,
+    required this.rects,
+    required this.isAdvance,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double scaleX;
-    final double scaleY;
+    // 1. Draw main background
+    final bgPaint = Paint()..color = grid.background;
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
-    if (isAdvance) {
-      scaleX = 1.0;
-      scaleY = 1.0;
-    } else {
-      scaleX = size.width / 320.0;
-      scaleY = size.height / 240.0;
-    }
+    // 2. Draw rectangles (waveform)
+    final rectPaint = Paint();
+    final double scaleX = size.width / 320.0;
+    final double scaleY = size.height / 240.0;
 
-    final paint = Paint();
     for (final rectCmd in rects) {
-      paint.color = grid.colorPalette[rectCmd.colorIdx];
+      rectPaint.color = grid.colorPalette[rectCmd.colorIdx];
       final rect = Rect.fromLTWH(
         rectCmd.x.toDouble() * scaleX,
         rectCmd.y.toDouble() * scaleY,
-        rectCmd.width.toDouble() * scaleX,
-        rectCmd.height.toDouble() * scaleY,
+        (rectCmd.width.toDouble() * scaleX) + 1,
+        (rectCmd.height.toDouble() * scaleY) + 1,
       );
-      canvas.drawRect(rect, paint);
+      canvas.drawRect(rect, rectPaint);
+    }
+
+    // 3. Draw character grid
+    final double charWidth = (size.width / COLS).roundToDouble();
+    final double charHeight = (size.height / ROWS).roundToDouble();
+    final double fontSize = isAdvance ? 22.0 : 16.0;
+    final textStyle = TextStyle(
+      fontFamily: fontNotifier.value.name,
+      fontSize: fontSize,
+      height: 1.0,
+    );
+
+    final cellBgPaint = Paint();
+
+    for (int y = 0; y < ROWS; y++) {
+      for (int x = 0; x < COLS; x++) {
+        final cell = grid.getRows()[y][x];
+        final cellRect =
+            Rect.fromLTWH(x * charWidth, y * charHeight, charWidth, charHeight);
+
+        final isInvertedSpaceChar = cell.char == " " && cell.invert;
+        final cellBackgroundColor = isInvertedSpaceChar
+            ? cell.color
+            : (cell.invert ? cell.color : Colors.transparent);
+
+        if (cellBackgroundColor != Colors.transparent) {
+          cellBgPaint.color = cellBackgroundColor;
+          canvas.drawRect(cellRect, cellBgPaint);
+        }
+
+        final textColor = isInvertedSpaceChar
+            ? cell.color
+            : (cell.invert ? grid.background : cell.color);
+
+        final character = isInvertedSpaceChar ? "\u2588" : cell.char;
+
+        final textSpan = TextSpan(
+          text: character,
+          style: textStyle.copyWith(color: textColor),
+        );
+        final textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout(minWidth: 0, maxWidth: charWidth);
+
+        final textX = cellRect.left + (charWidth - textPainter.width) / 2;
+        final textY = cellRect.top + (charHeight - textPainter.height) / 2;
+
+        textPainter.paint(canvas, Offset(textX, textY));
+      }
     }
   }
 
   @override
-  bool shouldRepaint(RectanglePainter oldDelegate) {
-    return oldDelegate.rects != rects;
+  bool shouldRepaint(PicoScreenPainter oldDelegate) {
+    return true; // Inefficient, but guarantees repaint for now
   }
 }
 
@@ -81,29 +127,13 @@ class PicoScreen extends StatelessWidget {
             padding: const EdgeInsets.only(
                 top: 100, bottom: 98, left: 60, right: 75),
             child: Container(
-              width: 320 * 2,
-              height: 240 * 2,
-              color: backgroundColor,
-              child: Stack(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: grid
-                        .getRows()
-                        .map((row) => ScreenCharRow(
-                              row,
-                              grid,
-                            ))
-                        .toList(),
-                  ),
-                  SizedBox(
-                    width: 320 * 2,
-                    height: 240 * 2,
-                    child: CustomPaint(
-                      painter: RectanglePainter(rects, grid, grid.isAdvance),
-                    ),
-                  ),
-                ],
+              child: CustomPaint(
+                size: const Size(640, 480),
+                painter: PicoScreenPainter(
+                  grid: grid,
+                  rects: rects,
+                  isAdvance: serialHandler.isAdvance(),
+                ),
               ),
             ),
           ),
