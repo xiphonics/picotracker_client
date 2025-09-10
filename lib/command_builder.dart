@@ -22,7 +22,7 @@ enum CommandType {
   CLEAR(3),
   SET_COLOUR(3),
   SET_FONT(1),
-  DRAW_RECT(5);
+  DRAW_RECT(9);
 
   const CommandType(this.paramCount);
   final int paramCount;
@@ -154,10 +154,10 @@ class CmdBuilder {
         if (_byteBuffer.length == _type!.paramCount) {
           final cmd = DrawRectCmd(
             colorIdx: _byteBuffer[0],
-            x: _byteBuffer[1],
-            y: _byteBuffer[2],
-            width: _byteBuffer[3],
-            height: _byteBuffer[4],
+            x: (_byteBuffer[1] | (_byteBuffer[2] << 8)) & 0xFFFF,
+            y: (_byteBuffer[3] | (_byteBuffer[4] << 8)) & 0xFFFF,
+            width: (_byteBuffer[5] | (_byteBuffer[6] << 8)) & 0xFFFF,
+            height: (_byteBuffer[7] | (_byteBuffer[8] << 8)) & 0xFFFF,
           );
           _commandStreamController.add(cmd);
           _reset();
