@@ -97,7 +97,7 @@ class ScreenCharRow extends StatelessWidget {
         // For regular characters, use the grid's background unless inverted
         final backgroundColor = isInvertedSpaceChar
             ? cell.color
-            : (cell.invert ? cell.color : grid.background);
+            : (cell.invert ? cell.color : Colors.transparent);
 
         // Text color is the inverse of the background when inverted
         final textColor = isInvertedSpaceChar

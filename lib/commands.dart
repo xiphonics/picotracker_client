@@ -52,6 +52,22 @@ class FontCmd implements Command {
   });
 }
 
+class DrawRectCmd implements Command {
+  final int colorIdx;
+  final int x;
+  final int y;
+  final int width;
+  final int height;
+
+  DrawRectCmd({
+    required this.colorIdx,
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+  });
+}
+
 class GridCell {
   final int _char;
   final Color color;

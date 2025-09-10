@@ -26,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
   int keymask = 0;
   StreamSubscription? subscription;
   StreamSubscription? cmdStreamSubscription;
-  final _grid = ScreenCharGrid();
+  late final ScreenCharGrid _grid;
   final cmdBuilder = CmdBuilder();
 
   StreamSubscription? usbUdevStream;
@@ -35,6 +35,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     serialHandler = SerialPortHandler(cmdBuilder);
+    _grid = ScreenCharGrid(serialHandler.isAdvance());
 
     cmdBuilder.commands.listen((cmd) {
       setState(() {
@@ -53,6 +54,10 @@ class _MainScreenState extends State<MainScreen> {
           case FontCmd():
             final offset = serialHandler.isAdvance() ? AdvFontOffSet : 0;
             fontNotifier.value = PtFont.values[cmd.index + offset];
+            break;
+          case DrawRectCmd():
+            debugPrint("DrawRectCmd received: x=${cmd.x}, y=${cmd.y}, width=${cmd.width}, height=${cmd.height}, colorIdx=${cmd.colorIdx}");
+            _grid.addRect(cmd.x, cmd.y, cmd.width, cmd.height, cmd.colorIdx);
             break;
         }
       });
@@ -76,6 +81,7 @@ class _MainScreenState extends State<MainScreen> {
             PicoScreen(
               _grid,
               _grid.background,
+              _grid.rects,
               connected: serialHandler.isConnected(),
             ),
             Visibility(

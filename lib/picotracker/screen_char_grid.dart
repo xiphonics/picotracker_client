@@ -9,10 +9,14 @@ const ROWS = 24;
 typedef Coord = ({int x, int y});
 
 class ScreenCharGrid {
+  final bool isAdvance;
   Color _currentColour = Colors.white;
   Color _backgroundColor = Colors.black;
   List<GridCell> _gridlist =
       List.filled(COLS * ROWS, GridCell(0, Colors.black, false));
+  List<DrawRectCmd> rects = [];
+
+  ScreenCharGrid(this.isAdvance);
 
   final List<Color> colorPalette = [
     const Color(0xFF000000),
@@ -45,6 +49,7 @@ class ScreenCharGrid {
 
   void clear() {
     _gridlist = List.filled(COLS * ROWS, GridCell(0, _backgroundColor, false));
+    rects = [];
   }
 
   void setColor(int r, int g, int b) {
@@ -53,18 +58,24 @@ class ScreenCharGrid {
     final r565 = (r >> 3) & 0x1F; // 5 bits for red
     final g565 = (g >> 2) & 0x3F; // 6 bits for green
     final b565 = (b >> 3) & 0x1F; // 5 bits for blue
-  
+
     // Convert back to RGB888
     final r888 = (r565 << 3) | (r565 >> 2); // Expand 5 bits to 8 bits
     final g888 = (g565 << 2) | (g565 >> 4); // Expand 6 bits to 8 bits
     final b888 = (b565 << 3) | (b565 >> 2); // Expand 5 bits to 8 bits
-  
+
     final color = Color.fromRGBO(r888, g888, b888, 1);
     _currentColour = color;
   }
 
   void setBackground(int r, int g, int b) {
     _backgroundColor = Color.fromRGBO(r, g, b, 1);
+  }
+
+  void addRect(int x, int y, int width, int height, int colorIdx) {
+    rects = List.from(rects)
+      ..add(DrawRectCmd(
+          x: x, y: y, width: width, height: height, colorIdx: colorIdx));
   }
 
   List<List<GridCell>> getRows() {
