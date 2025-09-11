@@ -39,8 +39,23 @@ class PicoScreenPainter extends CustomPainter {
     final deviceScreenHeight = isAdvance ? 720.0 : 240.0;
     final double scaleX = size.width / deviceScreenWidth;
     final double scaleY = size.height / deviceScreenHeight;
-    final double charWidth = (size.width / 32).roundToDouble();
-    final double charHeight = (size.height / 24).roundToDouble();
+
+    final double charWidth;
+    final double charHeight;
+    final double offsetX;
+    final double offsetY;
+
+    if (isAdvance) {
+      charWidth = 22.0;
+      charHeight = 32.0;
+      offsetX = (size.width - (32 * charWidth)) / 2.0;
+      offsetY = (size.height - (24 * charHeight)) / 2.0;
+    } else {
+      charWidth = size.width / 32.0;
+      charHeight = size.height / 24.0;
+      offsetX = 0;
+      offsetY = 0;
+    }
 
     for (final command in commands) {
       switch (command) {
@@ -54,8 +69,8 @@ class PicoScreenPainter extends CustomPainter {
           final rect = Rect.fromLTWH(
             command.x.toDouble() * scaleX,
             command.y.toDouble() * scaleY,
-            (command.width.toDouble() * scaleX) + 1,
-            (command.height.toDouble() * scaleY) + 1,
+            (command.width.toDouble() * scaleX),
+            (command.height.toDouble() * scaleY),
           );
           canvas.drawRect(rect, rectPaint);
           break;
@@ -66,8 +81,8 @@ class PicoScreenPainter extends CustomPainter {
           final Color cellBgColor = isInverted ? currentColor : backgroundColor;
           final Color charColor = isInverted ? backgroundColor : currentColor;
 
-          final cellRect = Rect.fromLTWH(command.x * charWidth,
-              command.y * charHeight, charWidth, charHeight);
+          final cellRect = Rect.fromLTWH(offsetX + command.x * charWidth,
+              offsetY + command.y * charHeight, charWidth, charHeight);
 
           // Always draw the cell's background first to clear old state
           cellBgPaint.color = cellBgColor;
@@ -76,7 +91,7 @@ class PicoScreenPainter extends CustomPainter {
           // Then draw the character
           final textStyle = TextStyle(
             fontFamily: fontNotifier.value.name.replaceAll("_", " "),
-            fontSize: isAdvance ? 22.0 : 16.0,
+            fontSize: charHeight,
             height: 1.0,
             color: charColor,
           );
@@ -117,6 +132,8 @@ class PicoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAdvance = serialHandler.isAdvance();
+
     return Column(
       children: [
         Visibility(
@@ -130,14 +147,16 @@ class PicoScreen extends StatelessWidget {
         SizedBox(
           height: 754,
           width: 904,
-          child: Padding(
-            padding: const EdgeInsets.only(
-                top: 100, bottom: 98, left: 60, right: 75),
-            child: CustomPaint(
-              size: const Size(640, 480),
-              painter: PicoScreenPainter(
-                commands: commands,
-                isAdvance: serialHandler.isAdvance(),
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: SizedBox(
+              width: isAdvance ? 720 : 640,
+              height: isAdvance ? 720 : 480,
+              child: CustomPaint(
+                painter: PicoScreenPainter(
+                  commands: commands,
+                  isAdvance: isAdvance,
+                ),
               ),
             ),
           ),
