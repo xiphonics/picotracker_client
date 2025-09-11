@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:picotracker_client/command_builder.dart';
-import 'package:picotracker_client/picotracker/screen_char_grid.dart';
 import 'package:picotracker_client/serialportinterface.dart';
 
 import 'commands.dart';
@@ -25,7 +24,6 @@ class _MainScreenState extends State<MainScreen> {
   int keymask = 0;
   StreamSubscription? subscription;
   StreamSubscription? cmdStreamSubscription;
-  late final ScreenCharGrid _grid;
   final cmdBuilder = CmdBuilder();
   final List<Command> _commands = [];
 
@@ -35,7 +33,6 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     serialHandler = SerialPortHandler(cmdBuilder);
-    _grid = ScreenCharGrid(serialHandler.isAdvance());
 
     cmdBuilder.commands.listen((cmd) {
       setState(() {
