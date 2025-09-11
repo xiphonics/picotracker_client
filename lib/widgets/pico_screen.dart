@@ -35,8 +35,10 @@ class PicoScreenPainter extends CustomPainter {
     // 2. Sequentially process all commands to draw the screen
     final rectPaint = Paint();
     final cellBgPaint = Paint();
-    final double scaleX = size.width / 320.0;
-    final double scaleY = size.height / 240.0;
+    final deviceScreenWidth = isAdvance ? 720.0 : 320.0;
+    final deviceScreenHeight = isAdvance ? 720.0 : 240.0;
+    final double scaleX = size.width / deviceScreenWidth;
+    final double scaleY = size.height / deviceScreenHeight;
     final double charWidth = (size.width / 32).roundToDouble();
     final double charHeight = (size.height / 24).roundToDouble();
 
