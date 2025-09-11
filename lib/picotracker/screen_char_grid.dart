@@ -18,25 +18,6 @@ class ScreenCharGrid {
 
   ScreenCharGrid(this.isAdvance);
 
-  final List<Color> colorPalette = [
-    const Color(0xFF000000),
-    const Color(0xFF0049E5),
-    const Color(0xFF00B926),
-    const Color(0xFF00E371),
-    const Color(0xFF009CF3),
-    const Color(0xFF00A324),
-    const Color(0xFF00EC46),
-    const Color(0xFF00F70D),
-    const Color(0xFF00ffff),
-    const Color(0xFF001926),
-    const Color(0xFF002A49),
-    const Color(0xFF004443),
-    const Color(0xFF00A664),
-    const Color(0xFF0002B0),
-    const Color(0xFF00351E),
-    const Color(0xFF00B6FD)
-  ];
-
   Color get color => _currentColour;
 
   Color get background => _backgroundColor;
@@ -72,10 +53,9 @@ class ScreenCharGrid {
     _backgroundColor = Color.fromRGBO(r, g, b, 1);
   }
 
-  void addRect(int x, int y, int width, int height, int colorIdx) {
+  void addRect(int x, int y, int width, int height) {
     rects = List.from(rects)
-      ..add(DrawRectCmd(
-          x: x, y: y, width: width, height: height, colorIdx: colorIdx));
+      ..add(DrawRectCmd(x: x, y: y, width: width, height: height));
   }
 
   List<List<GridCell>> getRows() {

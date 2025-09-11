@@ -13,6 +13,9 @@ const REMOTE_COMMAND_SET_COLOUR = 0x04;
 const REMOTE_COMMAND_SET_FONT = 0x05;
 const REMOTE_COMMAND_DRAWRECT = 0x06;
 
+const ASCII_SPACE_OFFSET = 0xF;
+const INVERT_ON = 0x7F;
+
 // Byte escaping constants
 const REMOTE_UI_ESC_CHAR = 0xFD;
 const REMOTE_UI_ESC_XOR = 0x20;
@@ -22,7 +25,7 @@ enum CommandType {
   CLEAR(3),
   SET_COLOUR(3),
   SET_FONT(1),
-  DRAW_RECT(9);
+  DRAW_RECT(8);
 
   const CommandType(this.paramCount);
   final int paramCount;
@@ -56,40 +59,34 @@ class CmdBuilder {
   Stream<Command> get commands => _commandStreamController.stream;
 
   void addByte(int byte) {
+    // debugPrint("addByte raw: $byte");
     // Handle byte escaping
     if (escapeNext) {
       // Unescape the byte by XORing with REMOTE_UI_ESC_XOR
       byte = byte ^ REMOTE_UI_ESC_XOR;
       escapeNext = false;
-
-      // Add the unescaped byte to the buffer
-      if (cmdStarted) {
-        _byteBuffer.add(byte);
-        if (_byteBuffer.length == _type?.paramCount) {
-          _build();
-        }
-      }
-      return;
-    }
-
-    // Check for escape character
-    if (byte == REMOTE_UI_ESC_CHAR) {
-      escapeNext = true;
-      return;
-    }
-
-    // Normal command processing
-    if (byte == REMOTE_COMMAND_MARKER) {
-      _reset();
-      cmdStarted = true;
-    } else if (_type == null && cmdStarted) {
-      _type = CommandType.fromMarkerByte(byte);
     } else {
-      if (cmdStarted) {
-        _byteBuffer.add(byte);
-        if (_byteBuffer.length == _type?.paramCount) {
-          _build();
-        }
+      // Check for escape character
+      if (byte == REMOTE_UI_ESC_CHAR) {
+        escapeNext = true;
+        return;
+      }
+
+      // Normal command processing
+      if (byte == REMOTE_COMMAND_MARKER) {
+        _reset();
+        cmdStarted = true;
+        return;
+      } else if (_type == null && cmdStarted) {
+        _type = CommandType.fromMarkerByte(byte);
+        return;
+      }
+    }
+
+    if (cmdStarted) {
+      _byteBuffer.add(byte);
+      if (_byteBuffer.length == _type?.paramCount) {
+        _build();
       }
     }
   }
@@ -126,6 +123,7 @@ class CmdBuilder {
         }
         break;
       case CommandType.SET_COLOUR:
+        // debugPrint("SET_COLOUR command received with bytes: $_byteBuffer");
         if (_byteBuffer.length == _type!.paramCount) {
           final r = _byteBuffer[0];
           final g = _byteBuffer[1];
@@ -137,31 +135,28 @@ class CmdBuilder {
         }
         break;
       case CommandType.SET_FONT:
-        if (_byteBuffer.length != 1) {
-          debugPrint("BAD FONT DATA:$_byteBuffer");
-          break;
+        if (_byteBuffer.length == _type!.paramCount) {
+          final index = _byteBuffer[0] - ASCII_SPACE_OFFSET;
+          if (index < PtFont.values.length) {
+            final cmd = FontCmd(index: index);
+            _commandStreamController.add(cmd);
+          } else {
+            debugPrint("BAD FONT INDEX:$index");
+          }
         }
-        final index = _byteBuffer[0] - ASCII_SPACE_OFFSET;
-        if (index < PtFont.values.length) {
-          final cmd = FontCmd(index: index);
-          _commandStreamController.add(cmd);
-          _reset();
-        } else {
-          debugPrint("BAD FONT INDEX:$index");
-        }
+        _reset();
         break;
       case CommandType.DRAW_RECT:
         if (_byteBuffer.length == _type!.paramCount) {
           final cmd = DrawRectCmd(
-            colorIdx: _byteBuffer[0],
-            x: (_byteBuffer[1] | (_byteBuffer[2] << 8)) & 0xFFFF,
-            y: (_byteBuffer[3] | (_byteBuffer[4] << 8)) & 0xFFFF,
-            width: (_byteBuffer[5] | (_byteBuffer[6] << 8)) & 0xFFFF,
-            height: (_byteBuffer[7] | (_byteBuffer[8] << 8)) & 0xFFFF,
+            x: (_byteBuffer[0] | (_byteBuffer[1] << 8)) & 0xFFFF,
+            y: (_byteBuffer[2] | (_byteBuffer[3] << 8)) & 0xFFFF,
+            width: (_byteBuffer[4] | (_byteBuffer[5] << 8)) & 0xFFFF,
+            height: (_byteBuffer[6] | (_byteBuffer[7] << 8)) & 0xFFFF,
           );
           _commandStreamController.add(cmd);
-          _reset();
         }
+        _reset();
         break;
       case null:
         break;

@@ -8,7 +8,6 @@ import 'package:picotracker_client/picotracker/screen_char_grid.dart';
 import 'package:picotracker_client/serialportinterface.dart';
 
 import 'commands.dart';
-import 'pico_app.dart';
 import 'widgets/pico_screen.dart';
 
 // just simple global for now
@@ -28,6 +27,7 @@ class _MainScreenState extends State<MainScreen> {
   StreamSubscription? cmdStreamSubscription;
   late final ScreenCharGrid _grid;
   final cmdBuilder = CmdBuilder();
+  final List<Command> _commands = [];
 
   StreamSubscription? usbUdevStream;
 
@@ -39,27 +39,10 @@ class _MainScreenState extends State<MainScreen> {
 
     cmdBuilder.commands.listen((cmd) {
       setState(() {
-        switch (cmd) {
-          case DrawCmd():
-            _grid.setChar((x: cmd.x, y: cmd.y), cmd.char, cmd.invert);
-            break;
-          case ClearCmd():
-            // Clear command also sets the background color
-            _grid.setBackground(cmd.r, cmd.g, cmd.b);
-            _grid.clear();
-            break;
-          case ColourCmd():
-            _grid.setColor(cmd.r, cmd.g, cmd.b);
-            break;
-          case FontCmd():
-            final offset = serialHandler.isAdvance() ? AdvFontOffSet : 0;
-            fontNotifier.value = PtFont.values[cmd.index + offset];
-            break;
-          case DrawRectCmd():
-            debugPrint("DrawRectCmd received: x=${cmd.x}, y=${cmd.y}, width=${cmd.width}, height=${cmd.height}, colorIdx=${cmd.colorIdx}");
-            _grid.addRect(cmd.x, cmd.y, cmd.width, cmd.height, cmd.colorIdx);
-            break;
+        if (cmd is ClearCmd) {
+          _commands.clear();
         }
+        _commands.add(cmd);
       });
     });
   }
@@ -79,9 +62,7 @@ class _MainScreenState extends State<MainScreen> {
         body: Stack(
           children: [
             PicoScreen(
-              _grid,
-              _grid.background,
-              _grid.rects,
+              _commands,
               connected: serialHandler.isConnected(),
             ),
             Visibility(

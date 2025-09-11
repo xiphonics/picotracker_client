@@ -2,93 +2,101 @@
 
 import 'package:flutter/material.dart';
 import 'package:picotracker_client/pico_app.dart';
-import 'package:picotracker_client/picotracker/screen_char_grid.dart';
 import '../commands.dart';
 import '../main_screen.dart';
 
 const buildVersion = String.fromEnvironment('BUILD_NUMBER');
 
 class PicoScreenPainter extends CustomPainter {
-  final ScreenCharGrid grid;
-  final List<DrawRectCmd> rects;
+  final List<Command> commands;
   final bool isAdvance;
 
   PicoScreenPainter({
-    required this.grid,
-    required this.rects,
+    required this.commands,
     required this.isAdvance,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Draw main background
-    final bgPaint = Paint()..color = grid.background;
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
+    Color currentColor = Colors.white;
+    Color backgroundColor = Colors.black;
 
-    // 2. Draw rectangles (waveform)
-    final rectPaint = Paint();
-    final double scaleX = size.width / 320.0;
-    final double scaleY = size.height / 240.0;
-
-    for (final rectCmd in rects) {
-      rectPaint.color = grid.colorPalette[rectCmd.colorIdx];
-      final rect = Rect.fromLTWH(
-        rectCmd.x.toDouble() * scaleX,
-        rectCmd.y.toDouble() * scaleY,
-        (rectCmd.width.toDouble() * scaleX) + 1,
-        (rectCmd.height.toDouble() * scaleY) + 1,
-      );
-      canvas.drawRect(rect, rectPaint);
+    // Process commands to set initial state
+    for (final command in commands) {
+      if (command is ClearCmd) {
+        backgroundColor = Color.fromRGBO(command.r, command.g, command.b, 1);
+      }
     }
 
-    // 3. Draw character grid
-    final double charWidth = (size.width / COLS).roundToDouble();
-    final double charHeight = (size.height / ROWS).roundToDouble();
-    final double fontSize = isAdvance ? 22.0 : 16.0;
-    final textStyle = TextStyle(
-      fontFamily: fontNotifier.value.name,
-      fontSize: fontSize,
-      height: 1.0,
-    );
+    // 1. Draw main background
+    final bgPaint = Paint()..color = backgroundColor;
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
+    // 2. Sequentially process all commands to draw the screen
+    final rectPaint = Paint();
     final cellBgPaint = Paint();
+    final double scaleX = size.width / 320.0;
+    final double scaleY = size.height / 240.0;
+    final double charWidth = (size.width / 32).roundToDouble();
+    final double charHeight = (size.height / 24).roundToDouble();
 
-    for (int y = 0; y < ROWS; y++) {
-      for (int x = 0; x < COLS; x++) {
-        final cell = grid.getRows()[y][x];
-        final cellRect =
-            Rect.fromLTWH(x * charWidth, y * charHeight, charWidth, charHeight);
+    for (final command in commands) {
+      switch (command) {
+        case ColourCmd():
+          currentColor = Color.fromRGBO(command.r, command.g, command.b, 1);
+          break;
 
-        final isInvertedSpaceChar = cell.char == " " && cell.invert;
-        final cellBackgroundColor = isInvertedSpaceChar
-            ? cell.color
-            : (cell.invert ? cell.color : Colors.transparent);
+        case DrawRectCmd():
+          // debugPrint("Drawing rect with color: $currentColor");
+          rectPaint.color = currentColor;
+          final rect = Rect.fromLTWH(
+            command.x.toDouble() * scaleX,
+            command.y.toDouble() * scaleY,
+            (command.width.toDouble() * scaleX) + 1,
+            (command.height.toDouble() * scaleY) + 1,
+          );
+          canvas.drawRect(rect, rectPaint);
+          break;
 
-        if (cellBackgroundColor != Colors.transparent) {
-          cellBgPaint.color = cellBackgroundColor;
+        case DrawCmd():
+          // Determine cell's background and foreground colors
+          final bool isInverted = command.invert;
+          final Color cellBgColor = isInverted ? currentColor : backgroundColor;
+          final Color charColor = isInverted ? backgroundColor : currentColor;
+
+          final cellRect = Rect.fromLTWH(command.x * charWidth,
+              command.y * charHeight, charWidth, charHeight);
+
+          // Always draw the cell's background first to clear old state
+          cellBgPaint.color = cellBgColor;
           canvas.drawRect(cellRect, cellBgPaint);
-        }
 
-        final textColor = isInvertedSpaceChar
-            ? cell.color
-            : (cell.invert ? grid.background : cell.color);
+          // Then draw the character
+          final textStyle = TextStyle(
+            fontFamily: fontNotifier.value.name,
+            fontSize: isAdvance ? 22.0 : 16.0,
+            height: 1.0,
+            color: charColor,
+          );
 
-        final character = isInvertedSpaceChar ? "\u2588" : cell.char;
+          final textSpan = TextSpan(
+            text: String.fromCharCode(command.char),
+            style: textStyle,
+          );
+          final textPainter = TextPainter(
+            text: textSpan,
+            textDirection: TextDirection.ltr,
+          );
+          textPainter.layout(minWidth: 0, maxWidth: charWidth);
 
-        final textSpan = TextSpan(
-          text: character,
-          style: textStyle.copyWith(color: textColor),
-        );
-        final textPainter = TextPainter(
-          text: textSpan,
-          textDirection: TextDirection.ltr,
-        );
-        textPainter.layout(minWidth: 0, maxWidth: charWidth);
+          final textX = cellRect.left + (charWidth - textPainter.width) / 2;
+          final textY = cellRect.top + (charHeight - textPainter.height) / 2;
 
-        final textX = cellRect.left + (charWidth - textPainter.width) / 2;
-        final textY = cellRect.top + (charHeight - textPainter.height) / 2;
+          textPainter.paint(canvas, Offset(textX, textY));
+          break;
 
-        textPainter.paint(canvas, Offset(textX, textY));
+        default:
+          break;
       }
     }
   }
@@ -100,13 +108,10 @@ class PicoScreenPainter extends CustomPainter {
 }
 
 class PicoScreen extends StatelessWidget {
-  final ScreenCharGrid grid;
-  final Color backgroundColor;
+  final List<Command> commands;
   final bool connected;
-  final List<DrawRectCmd> rects;
 
-  const PicoScreen(this.grid, this.backgroundColor, this.rects,
-      {super.key, required this.connected});
+  const PicoScreen(this.commands, {super.key, required this.connected});
 
   @override
   Widget build(BuildContext context) {
@@ -126,14 +131,11 @@ class PicoScreen extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(
                 top: 100, bottom: 98, left: 60, right: 75),
-            child: Container(
-              child: CustomPaint(
-                size: const Size(640, 480),
-                painter: PicoScreenPainter(
-                  grid: grid,
-                  rects: rects,
-                  isAdvance: serialHandler.isAdvance(),
-                ),
+            child: CustomPaint(
+              size: const Size(640, 480),
+              painter: PicoScreenPainter(
+                commands: commands,
+                isAdvance: serialHandler.isAdvance(),
               ),
             ),
           ),

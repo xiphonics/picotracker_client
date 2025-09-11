@@ -2,10 +2,6 @@
 
 import 'dart:ui';
 
-const REMOTE_COMMAND_MARKER = 0x01;
-const ASCII_SPACE_OFFSET = 0xF;
-const INVERT_ON = 0x7F;
-
 sealed class Command {}
 
 class DrawCmd implements Command {
@@ -53,14 +49,12 @@ class FontCmd implements Command {
 }
 
 class DrawRectCmd implements Command {
-  final int colorIdx;
   final int x;
   final int y;
   final int width;
   final int height;
 
   DrawRectCmd({
-    required this.colorIdx,
     required this.x,
     required this.y,
     required this.width,
@@ -73,9 +67,7 @@ class GridCell {
   final Color color;
   final bool invert;
 
-  // SPACE char instead of ascii 0
-  String get char =>
-      String.fromCharCode(_char != 0 ? _char : ASCII_SPACE_OFFSET);
+  String get char => String.fromCharCode(_char);
 
   GridCell(this._char, this.color, this.invert);
 
