@@ -47,7 +47,7 @@ class PicoScreenPainter extends CustomPainter {
 
     if (isAdvance) {
       charWidth = 22.0;
-      charHeight = 32.0;
+      charHeight = 30.0;
       offsetX = (size.width - (32 * charWidth)) / 2.0;
       offsetY = (size.height - (24 * charHeight)) / 2.0;
     } else {
