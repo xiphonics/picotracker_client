@@ -7,6 +7,7 @@ import 'package:picotracker_client/command_builder.dart';
 import 'package:picotracker_client/serialportinterface.dart';
 
 import 'commands.dart';
+import 'pico_app.dart';
 import 'widgets/pico_screen.dart';
 
 // just simple global for now
@@ -38,6 +39,10 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         if (cmd is ClearCmd) {
           _commands.clear();
+        }
+        if (cmd is FontCmd) {
+          final offset = serialHandler.isAdvance() ? AdvFontOffSet : 0;
+          fontNotifier.value = PtFont.values[cmd.index + offset];
         }
         _commands.add(cmd);
       });

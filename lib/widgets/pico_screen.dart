@@ -75,7 +75,7 @@ class PicoScreenPainter extends CustomPainter {
 
           // Then draw the character
           final textStyle = TextStyle(
-            fontFamily: fontNotifier.value.name,
+            fontFamily: fontNotifier.value.name.replaceAll("_", " "),
             fontSize: isAdvance ? 22.0 : 16.0,
             height: 1.0,
             color: charColor,
