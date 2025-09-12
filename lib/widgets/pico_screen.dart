@@ -81,11 +81,8 @@ class PicoScreenPainter extends CustomPainter {
           final Color cellBgColor = isInverted ? currentColor : backgroundColor;
           final Color charColor = isInverted ? backgroundColor : currentColor;
 
-          final cellRect = Rect.fromLTWH(
-              offsetX + command.x * charWidth,
-              offsetY + command.y * charHeight,
-              charWidth,
-              charHeight);
+          final cellRect = Rect.fromLTWH(offsetX + command.x * charWidth,
+              offsetY + command.y * charHeight, charWidth, charHeight);
 
           // Always draw the cell's background first to clear old state
           cellBgPaint.color = cellBgColor;
