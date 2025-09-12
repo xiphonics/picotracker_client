@@ -33,8 +33,8 @@ class PicoScreenPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
     // 2. Sequentially process all commands to draw the screen
-    final rectPaint = Paint();
-    final cellBgPaint = Paint();
+    final rectPaint = Paint()..isAntiAlias = false;
+    final cellBgPaint = Paint()..isAntiAlias = false;
     final deviceScreenWidth = isAdvance ? 720.0 : 320.0;
     final deviceScreenHeight = isAdvance ? 720.0 : 240.0;
     final double scaleX = size.width / deviceScreenWidth;
@@ -81,8 +81,11 @@ class PicoScreenPainter extends CustomPainter {
           final Color cellBgColor = isInverted ? currentColor : backgroundColor;
           final Color charColor = isInverted ? backgroundColor : currentColor;
 
-          final cellRect = Rect.fromLTWH(offsetX + command.x * charWidth,
-              offsetY + command.y * charHeight, charWidth, charHeight);
+          final cellRect = Rect.fromLTWH(
+              offsetX + command.x * charWidth,
+              offsetY + command.y * charHeight,
+              charWidth,
+              charHeight);
 
           // Always draw the cell's background first to clear old state
           cellBgPaint.color = cellBgColor;
