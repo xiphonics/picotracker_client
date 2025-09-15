@@ -63,9 +63,12 @@ class _MainScreenState extends State<MainScreen> {
         backgroundColor: Colors.black,
         body: Stack(
           children: [
-            PicoScreen(
-              _commands,
-              connected: serialHandler.isConnected(),
+            Padding(
+              padding: const EdgeInsets.only(left: 24.0),
+              child: PicoScreen(
+                _commands,
+                connected: serialHandler.isConnected(),
+              ),
             ),
             Visibility(
               visible: !serialHandler.isConnected(),
