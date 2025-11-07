@@ -64,7 +64,7 @@ class _MainScreenState extends State<MainScreen> {
         body: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 24.0),
+              padding: const EdgeInsets.only(top: 24.0, left: 24.0),
               child: PicoScreen(
                 _commands,
                 connected: serialHandler.isConnected(),
