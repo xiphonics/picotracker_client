@@ -27,7 +27,7 @@ The production application is deployed to: https://ui.xiphonics.com/ via GitHub 
 
 - [X] display fg/bg colours
 - [X] webapp version
-- [X] use palette (custom colours) send from picotracker ([once supported by remoteui protocol](https://github.com/xiphonics/picoTracker/issues/263))
+- [X] use custom colours sent from picotracker ([once supported by remoteui protocol](https://github.com/xiphonics/picoTracker/issues/263))
 - [X] implement notes blank *background* display of Song screen
 - [ ] reconnect port on picotracker reset (on load new project)
 - [ ] set initial window size

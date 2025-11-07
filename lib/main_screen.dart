@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:picotracker_client/command_builder.dart';
-import 'package:picotracker_client/picotracker/screen_char_grid.dart';
 import 'package:picotracker_client/serialportinterface.dart';
 
 import 'commands.dart';
@@ -26,8 +25,8 @@ class _MainScreenState extends State<MainScreen> {
   int keymask = 0;
   StreamSubscription? subscription;
   StreamSubscription? cmdStreamSubscription;
-  final _grid = ScreenCharGrid();
   final cmdBuilder = CmdBuilder();
+  final List<Command> _commands = [];
 
   StreamSubscription? usbUdevStream;
 
@@ -38,23 +37,14 @@ class _MainScreenState extends State<MainScreen> {
 
     cmdBuilder.commands.listen((cmd) {
       setState(() {
-        switch (cmd) {
-          case DrawCmd():
-            _grid.setChar((x: cmd.x, y: cmd.y), cmd.char, cmd.invert);
-            break;
-          case ClearCmd():
-            // Clear command also sets the background color
-            _grid.setBackground(cmd.r, cmd.g, cmd.b);
-            _grid.clear();
-            break;
-          case ColourCmd():
-            _grid.setColor(cmd.r, cmd.g, cmd.b);
-            break;
-          case FontCmd():
-            final offset = serialHandler.isAdvance() ? AdvFontOffSet : 0;
-            fontNotifier.value = PtFont.values[cmd.index + offset];
-            break;
+        if (cmd is ClearCmd) {
+          _commands.clear();
         }
+        if (cmd is FontCmd) {
+          final offset = serialHandler.isAdvance() ? AdvFontOffSet : 0;
+          fontNotifier.value = PtFont.values[cmd.index + offset];
+        }
+        _commands.add(cmd);
       });
     });
   }
@@ -73,10 +63,12 @@ class _MainScreenState extends State<MainScreen> {
         backgroundColor: Colors.black,
         body: Stack(
           children: [
-            PicoScreen(
-              _grid,
-              _grid.background,
-              connected: serialHandler.isConnected(),
+            Padding(
+              padding: const EdgeInsets.only(top: 24.0, left: 24.0),
+              child: PicoScreen(
+                _commands,
+                connected: serialHandler.isConnected(),
+              ),
             ),
             Visibility(
               visible: !serialHandler.isConnected(),
