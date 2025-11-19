@@ -37,17 +37,6 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    # Hourglass and You Squared fonts from: https://damieng.com/typography/zx-origins/orbiter/
     - assets/fonts/
     - assets/images/
-
-  # Hourglass and You Squared fonts from: https://damieng.com/typography/zx-origins/orbiter/
-  fonts:
-    - family: Hourglass
-      fonts:
-        - asset: assets/fonts/Hourglass.ttf
-    - family: YouSquared
-      fonts:
-        - asset: assets/fonts/YouSquared.ttf
-    - family: Ubuntu Mono
-      fonts:
-        - asset: assets/fonts/UbuntuMono-Regular.ttf
