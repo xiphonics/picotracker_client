@@ -1,7 +1,8 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:picotracker_client/pico_app.dart';
+import 'package:flutter/services.dart';
 import '../commands.dart';
 import '../main_screen.dart';
 
@@ -10,21 +11,48 @@ const buildVersion = String.fromEnvironment('BUILD_NUMBER');
 class PicoScreenPainter extends CustomPainter {
   final List<Command> commands;
   final bool isAdvance;
+  final int currentFont;
+  static ui.Image? _fontImage;
 
   PicoScreenPainter({
     required this.commands,
     required this.isAdvance,
-  });
+    required this.currentFont,
+  }) {
+    if (isAdvance) {
+      _loadFontAsync('assets/fonts/font_adv.png');
+    } else if (!isAdvance) {
+      // Load fonts based on currentFont index
+      if (currentFont == 0) {
+        _loadFontAsync('assets/fonts/font_hourglass.png');
+      } else if (currentFont == 1) {
+        _loadFontAsync('assets/fonts/font_yousquared.png');
+      } else if (currentFont == 2) {
+        _loadFontAsync('assets/fonts/font_wide.png');
+      }
+    }
+  }
+
+  static void _loadFontAsync(String path) async {
+    final ByteData data = await rootBundle.load(path);
+    final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+    final frame = await codec.getNextFrame();
+    _fontImage = frame.image;
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
     Color currentColor = Colors.white;
     Color backgroundColor = Colors.black;
+    int activeFontIndex = currentFont; // Track active font through commands
 
     // Process commands to set initial state
     for (final command in commands) {
       if (command is ClearCmd) {
         backgroundColor = Color.fromRGBO(command.r, command.g, command.b, 1);
+      }
+      if (command is FontCmd && !isAdvance) {
+        activeFontIndex = command.index;
       }
     }
 
@@ -63,6 +91,12 @@ class PicoScreenPainter extends CustomPainter {
           currentColor = Color.fromRGBO(command.r, command.g, command.b, 1);
           break;
 
+        case FontCmd():
+          if (!isAdvance) {
+            activeFontIndex = command.index;
+          }
+          break;
+
         case DrawRectCmd():
           // debugPrint("Drawing rect with color: $currentColor");
           rectPaint.color = currentColor;
@@ -76,6 +110,11 @@ class PicoScreenPainter extends CustomPainter {
           break;
 
         case DrawCmd():
+          if (_fontImage == null) {
+            // Font image not loaded yet; skip drawing
+            break;
+          }
+
           // Determine cell's background and foreground colors
           final bool isInverted = command.invert;
           final Color cellBgColor = isInverted ? currentColor : backgroundColor;
@@ -88,28 +127,33 @@ class PicoScreenPainter extends CustomPainter {
           cellBgPaint.color = cellBgColor;
           canvas.drawRect(cellRect, cellBgPaint);
 
-          // Then draw the character
-          final textStyle = TextStyle(
-            fontFamily: fontNotifier.value.name.replaceAll("_", " "),
-            fontSize: charHeight,
-            height: 1.0,
-            color: charColor,
+          // Use PNG font for Advance mode (16x16 character grid, antialiased)
+          final charRow = command.char ~/ 16;
+          final charCol = command.char % 16;
+          
+          // Source dimensions in the image (equal divisions)
+          final fontCharWidth = _fontImage!.width / 16;
+          final fontCharHeight = _fontImage!.height / 16;
+          
+          final srcRect = Rect.fromLTWH(
+            charCol * fontCharWidth,
+            charRow * fontCharHeight,
+            fontCharWidth,
+            fontCharHeight,
           );
-
-          final textSpan = TextSpan(
-            text: String.fromCharCode(command.char),
-            style: textStyle,
+          
+          // Draw with or without antialiasing based on mode
+          final paint = Paint()
+            ..isAntiAlias = isAdvance
+            ..filterQuality = isAdvance ? FilterQuality.high : FilterQuality.none
+            ..colorFilter = ColorFilter.mode(charColor, BlendMode.srcIn);
+          
+          canvas.drawImageRect(
+            _fontImage!,
+            srcRect,
+            cellRect,
+            paint,
           );
-          final textPainter = TextPainter(
-            text: textSpan,
-            textDirection: TextDirection.ltr,
-          );
-          textPainter.layout(minWidth: 0, maxWidth: charWidth);
-
-          final textX = cellRect.left + (charWidth - textPainter.width) / 2;
-          final textY = cellRect.top + (charHeight - textPainter.height) / 2;
-
-          textPainter.paint(canvas, Offset(textX, textY));
           break;
 
         default:
@@ -124,20 +168,26 @@ class PicoScreenPainter extends CustomPainter {
   }
 }
 
-class PicoScreen extends StatelessWidget {
+class PicoScreen extends StatefulWidget {
   final List<Command> commands;
   final bool connected;
+  final bool isAdvanceMode;
+  final int currentFont;
 
-  const PicoScreen(this.commands, {super.key, required this.connected});
+  const PicoScreen(this.commands, {super.key, required this.connected, required this.isAdvanceMode, required this.currentFont});
+
+  @override
+  State<PicoScreen> createState() => _PicoScreenState();
+}
+
+class _PicoScreenState extends State<PicoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isAdvance = serialHandler.isAdvance();
-
     return Column(
       children: [
         Visibility(
-          visible: !connected,
+          visible: !widget.connected,
           child: Padding(
             padding: const EdgeInsets.all(4.0),
             child: Text("picoTracker Client  [build $buildVersion]",
@@ -145,19 +195,13 @@ class PicoScreen extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 754,
-          width: 904,
-          child: FittedBox(
-            fit: BoxFit.contain,
-            child: SizedBox(
-              width: isAdvance ? 720 : 640,
-              height: isAdvance ? 720 : 480,
-              child: CustomPaint(
-                painter: PicoScreenPainter(
-                  commands: commands,
-                  isAdvance: isAdvance,
-                ),
-              ),
+          width: widget.isAdvanceMode ? 720 : 640,
+          height: widget.isAdvanceMode ? 720 : 480,
+          child: CustomPaint(
+            painter: PicoScreenPainter(
+              commands: widget.commands,
+              isAdvance: widget.isAdvanceMode,
+              currentFont: widget.currentFont,
             ),
           ),
         ),

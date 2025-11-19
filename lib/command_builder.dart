@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:picotracker_client/pico_app.dart';
 
 import 'commands.dart';
 
@@ -137,12 +136,8 @@ class CmdBuilder {
       case CommandType.SET_FONT:
         if (_byteBuffer.length == _type!.paramCount) {
           final index = _byteBuffer[0] - ASCII_SPACE_OFFSET;
-          if (index < PtFont.values.length) {
-            final cmd = FontCmd(index: index);
-            _commandStreamController.add(cmd);
-          } else {
-            debugPrint("BAD FONT INDEX:$index");
-          }
+          final cmd = FontCmd(index: index);
+          _commandStreamController.add(cmd);
         }
         _reset();
         break;
