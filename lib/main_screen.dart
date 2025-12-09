@@ -42,7 +42,12 @@ class _MainScreenState extends State<MainScreen> {
         }
         if (cmd is FontCmd) {
           final offset = serialHandler.isAdvance() ? AdvFontOffSet : 0;
-          fontNotifier.value = PtFont.values[cmd.index + offset];
+          final fontIndex = cmd.index + offset;
+          if (fontIndex < PtFont.values.length) {
+            fontNotifier.value = PtFont.values[fontIndex];
+          } else {
+            debugPrint("BAD FONT INDEX:$fontIndex (raw ${cmd.index})");
+          }
         }
         _commands.add(cmd);
       });
