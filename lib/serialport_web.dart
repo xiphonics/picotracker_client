@@ -1,7 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:flutter/foundation.dart';
-import 'package:picotracker_client/pico_app.dart';
 import 'package:webserial/webserial.dart';
 import 'dart:js_interop';
 
@@ -19,6 +18,7 @@ bool _isAdvance = false;
 class SerialPortHandler {
   final CmdBuilder cmdBuilder;
   JSSerialPort? port;
+  Function(bool)? onAdvanceModeChanged;
 
   SerialPortHandler(this.cmdBuilder);
 
@@ -66,7 +66,7 @@ class SerialPortHandler {
       if (port?.getInfo().usbVendorId == PICOTRACKERADVANCE_VENDOR_ID &&
           port?.getInfo().usbProductId == PICOTRACKERADVANCE_PRODUCT_ID) {
         _isAdvance = true;
-        fontNotifier.value = PtFont.Ubuntu_Mono;
+        onAdvanceModeChanged?.call(true);
       }
     } else {
       debugPrint("port already opened: ${port?.readable}");

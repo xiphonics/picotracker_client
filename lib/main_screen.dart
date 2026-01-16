@@ -7,7 +7,6 @@ import 'package:picotracker_client/command_builder.dart';
 import 'package:picotracker_client/serialportinterface.dart';
 
 import 'commands.dart';
-import 'pico_app.dart';
 import 'widgets/pico_screen.dart';
 
 // just simple global for now
@@ -27,6 +26,8 @@ class _MainScreenState extends State<MainScreen> {
   StreamSubscription? cmdStreamSubscription;
   final cmdBuilder = CmdBuilder();
   final List<Command> _commands = [];
+  bool isAdvanceMode = false;
+  int currentFont = 2;
 
   StreamSubscription? usbUdevStream;
 
@@ -34,20 +35,20 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     serialHandler = SerialPortHandler(cmdBuilder);
+    serialHandler.onAdvanceModeChanged = (bool isAdvance) {
+      setState(() {
+        isAdvanceMode = isAdvance;
+      });
+    };
 
     cmdBuilder.commands.listen((cmd) {
       setState(() {
         if (cmd is ClearCmd) {
           _commands.clear();
         }
-        if (cmd is FontCmd) {
-          final offset = serialHandler.isAdvance() ? AdvFontOffSet : 0;
-          final fontIndex = cmd.index + offset;
-          if (fontIndex < PtFont.values.length) {
-            fontNotifier.value = PtFont.values[fontIndex];
-          } else {
-            debugPrint("BAD FONT INDEX:$fontIndex (raw ${cmd.index})");
-          }
+        // only switch fonts on picoTracker, not on Advance
+        if (cmd is FontCmd && !isAdvanceMode) {
+          currentFont = cmd.index;
         }
         _commands.add(cmd);
       });
@@ -73,6 +74,8 @@ class _MainScreenState extends State<MainScreen> {
               child: PicoScreen(
                 _commands,
                 connected: serialHandler.isConnected(),
+                isAdvanceMode: isAdvanceMode,
+                currentFont: currentFont,
               ),
             ),
             Visibility(
@@ -80,22 +83,92 @@ class _MainScreenState extends State<MainScreen> {
               child: Positioned(
                 left: MediaQuery.of(context).size.width / 4,
                 top: MediaQuery.of(context).size.height / 4,
-                child: MaterialButton(
-                  color: const Color.fromARGB(255, 35, 13, 73),
-                  child: const Padding(
-                    padding: EdgeInsets.all(38.0),
-                    child: Text(
-                      "Connect",
-                      style: TextStyle(
-                        color: Colors.amberAccent,
-                        fontSize: 50,
-                      ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isAdvanceMode = false;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0, vertical: 12.0),
+                            decoration: BoxDecoration(
+                              color: !isAdvanceMode
+                                  ? const Color.fromARGB(255, 35, 13, 73)
+                                  : const Color.fromARGB(255, 20, 7, 40),
+                              border: Border.all(
+                                color: Colors.amberAccent,
+                                width: !isAdvanceMode ? 2 : 1,
+                              ),
+                            ),
+                            child: Text(
+                              "picoTracker",
+                              style: TextStyle(
+                                color: !isAdvanceMode
+                                    ? Colors.amberAccent
+                                    : Colors.grey,
+                                fontSize: 24,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isAdvanceMode = true;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0, vertical: 12.0),
+                            decoration: BoxDecoration(
+                              color: isAdvanceMode
+                                  ? const Color.fromARGB(255, 35, 13, 73)
+                                  : const Color.fromARGB(255, 20, 7, 40),
+                              border: Border.all(
+                                color: Colors.amberAccent,
+                                width: isAdvanceMode ? 2 : 1,
+                              ),
+                            ),
+                            child: Text(
+                              "Advance",
+                              style: TextStyle(
+                                color: isAdvanceMode
+                                    ? Colors.amberAccent
+                                    : Colors.grey,
+                                fontSize: 24,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  onPressed: () {
-                    serialHandler.chooseSerialDevice();
-                    setState(() {});
-                  },
+                    const SizedBox(height: 16),
+                    MaterialButton(
+                      color: const Color.fromARGB(255, 35, 13, 73),
+                      child: const Padding(
+                        padding: EdgeInsets.all(38.0),
+                        child: Text(
+                          "Connect",
+                          style: TextStyle(
+                            color: Colors.amberAccent,
+                            fontSize: 50,
+                          ),
+                        ),
+                      ),
+                      onPressed: () {
+                        serialHandler.chooseSerialDevice();
+                        setState(() {});
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
