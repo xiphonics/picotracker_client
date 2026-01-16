@@ -11,6 +11,7 @@ class SerialPortHandler {
   SerialPort? port;
   StreamSubscription? subscription;
   StreamSubscription? usbUdevStream;
+  Function(bool)? onAdvanceModeChanged;
 
   String portname = "/dev/ttyACM0";
 
