@@ -43,15 +43,11 @@ class PicoScreenPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     Color currentColor = Colors.white;
     Color backgroundColor = Colors.black;
-    int activeFontIndex = currentFont; // Track active font through commands
 
     // Process commands to set initial state
     for (final command in commands) {
       if (command is ClearCmd) {
         backgroundColor = Color.fromRGBO(command.r, command.g, command.b, 1);
-      }
-      if (command is FontCmd && !isAdvance) {
-        activeFontIndex = command.index;
       }
     }
 
@@ -91,9 +87,6 @@ class PicoScreenPainter extends CustomPainter {
           break;
 
         case FontCmd():
-          if (!isAdvance) {
-            activeFontIndex = command.index;
-          }
           break;
 
         case DrawRectCmd():
