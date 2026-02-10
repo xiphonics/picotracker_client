@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../commands.dart';
-import '../main_screen.dart';
 
 const buildVersion = String.fromEnvironment('BUILD_NUMBER');
 
@@ -92,9 +91,6 @@ class PicoScreenPainter extends CustomPainter {
           break;
 
         case FontCmd():
-          if (!isAdvance) {
-            activeFontIndex = command.index;
-          }
           break;
 
         case DrawRectCmd():
@@ -130,24 +126,25 @@ class PicoScreenPainter extends CustomPainter {
           // Use PNG font for Advance mode (16x16 character grid, antialiased)
           final charRow = command.char ~/ 16;
           final charCol = command.char % 16;
-          
+
           // Source dimensions in the image (equal divisions)
           final fontCharWidth = _fontImage!.width / 16;
           final fontCharHeight = _fontImage!.height / 16;
-          
+
           final srcRect = Rect.fromLTWH(
             charCol * fontCharWidth,
             charRow * fontCharHeight,
             fontCharWidth,
             fontCharHeight,
           );
-          
+
           // Draw with or without antialiasing based on mode
           final paint = Paint()
             ..isAntiAlias = isAdvance
-            ..filterQuality = isAdvance ? FilterQuality.high : FilterQuality.none
+            ..filterQuality =
+                isAdvance ? FilterQuality.high : FilterQuality.none
             ..colorFilter = ColorFilter.mode(charColor, BlendMode.srcIn);
-          
+
           canvas.drawImageRect(
             _fontImage!,
             srcRect,
@@ -174,14 +171,17 @@ class PicoScreen extends StatefulWidget {
   final bool isAdvanceMode;
   final int currentFont;
 
-  const PicoScreen(this.commands, {super.key, required this.connected, required this.isAdvanceMode, required this.currentFont});
+  const PicoScreen(this.commands,
+      {super.key,
+      required this.connected,
+      required this.isAdvanceMode,
+      required this.currentFont});
 
   @override
   State<PicoScreen> createState() => _PicoScreenState();
 }
 
 class _PicoScreenState extends State<PicoScreen> {
-
   @override
   Widget build(BuildContext context) {
     return Column(
