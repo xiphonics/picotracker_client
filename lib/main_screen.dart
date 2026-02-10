@@ -97,14 +97,14 @@ class _MainScreenState extends State<MainScreen> {
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 24.0, vertical: 12.0),
+                              horizontal: 18.0, vertical: 10.0),
                             decoration: BoxDecoration(
                               color: !isAdvanceMode
                                   ? const Color.fromARGB(255, 35, 13, 73)
                                   : const Color.fromARGB(255, 20, 7, 40),
                               border: Border.all(
-                                color: Colors.amberAccent,
-                                width: !isAdvanceMode ? 2 : 1,
+                                color: Colors.amberAccent.withOpacity(!isAdvanceMode ? 1.0 : 0.5),
+                                width: 2,
                               ),
                             ),
                             child: Text(
@@ -113,7 +113,7 @@ class _MainScreenState extends State<MainScreen> {
                                 color: !isAdvanceMode
                                     ? Colors.amberAccent
                                     : Colors.grey,
-                                fontSize: 24,
+                                fontSize: 20,
                               ),
                             ),
                           ),
@@ -127,14 +127,14 @@ class _MainScreenState extends State<MainScreen> {
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 24.0, vertical: 12.0),
+                              horizontal: 18.0, vertical: 10.0),
                             decoration: BoxDecoration(
                               color: isAdvanceMode
                                   ? const Color.fromARGB(255, 35, 13, 73)
                                   : const Color.fromARGB(255, 20, 7, 40),
                               border: Border.all(
-                                color: Colors.amberAccent,
-                                width: isAdvanceMode ? 2 : 1,
+                                color: Colors.amberAccent.withOpacity(isAdvanceMode ? 1.0 : 0.5),
+                                width: 2,
                               ),
                             ),
                             child: Text(
@@ -143,7 +143,7 @@ class _MainScreenState extends State<MainScreen> {
                                 color: isAdvanceMode
                                     ? Colors.amberAccent
                                     : Colors.grey,
-                                fontSize: 24,
+                                fontSize: 20,
                               ),
                             ),
                           ),
@@ -154,12 +154,12 @@ class _MainScreenState extends State<MainScreen> {
                     MaterialButton(
                       color: const Color.fromARGB(255, 35, 13, 73),
                       child: const Padding(
-                        padding: EdgeInsets.all(38.0),
+                        padding: EdgeInsets.all(28.0),
                         child: Text(
                           "Connect",
                           style: TextStyle(
                             color: Colors.amberAccent,
-                            fontSize: 50,
+                            fontSize: 40,
                           ),
                         ),
                       ),
