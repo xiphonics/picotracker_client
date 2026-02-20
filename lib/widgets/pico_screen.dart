@@ -166,12 +166,14 @@ class PicoScreen extends StatefulWidget {
   final bool connected;
   final bool isAdvanceMode;
   final int currentFont;
+  final GlobalKey repaintBoundaryKey;
 
   const PicoScreen(this.commands,
       {super.key,
       required this.connected,
       required this.isAdvanceMode,
-      required this.currentFont});
+      required this.currentFont,
+      required this.repaintBoundaryKey});
 
   @override
   State<PicoScreen> createState() => _PicoScreenState();
@@ -193,11 +195,14 @@ class _PicoScreenState extends State<PicoScreen> {
         SizedBox(
           width: widget.isAdvanceMode ? 720 : 640,
           height: widget.isAdvanceMode ? 720 : 480,
-          child: CustomPaint(
-            painter: PicoScreenPainter(
-              commands: widget.commands,
-              isAdvance: widget.isAdvanceMode,
-              currentFont: widget.currentFont,
+          child: RepaintBoundary(
+            key: widget.repaintBoundaryKey,
+            child: CustomPaint(
+              painter: PicoScreenPainter(
+                commands: widget.commands,
+                isAdvance: widget.isAdvanceMode,
+                currentFont: widget.currentFont,
+              ),
             ),
           ),
         ),
