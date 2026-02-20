@@ -182,31 +182,34 @@ class PicoScreen extends StatefulWidget {
 class _PicoScreenState extends State<PicoScreen> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Visibility(
-          visible: !widget.connected,
-          child: Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Text("picoTracker Client  [build $buildVersion]",
-                style: Theme.of(context).textTheme.headlineSmall),
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Visibility(
+            visible: !widget.connected,
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Text("picoTracker Client  [build $buildVersion]",
+                  style: Theme.of(context).textTheme.headlineSmall),
+            ),
           ),
-        ),
-        SizedBox(
-          width: widget.isAdvanceMode ? 720 : 640,
-          height: widget.isAdvanceMode ? 720 : 480,
-          child: RepaintBoundary(
-            key: widget.repaintBoundaryKey,
-            child: CustomPaint(
-              painter: PicoScreenPainter(
-                commands: widget.commands,
-                isAdvance: widget.isAdvanceMode,
-                currentFont: widget.currentFont,
+          SizedBox(
+            width: widget.isAdvanceMode ? 720 : 640,
+            height: widget.isAdvanceMode ? 720 : 480,
+            child: RepaintBoundary(
+              key: widget.repaintBoundaryKey,
+              child: CustomPaint(
+                painter: PicoScreenPainter(
+                  commands: widget.commands,
+                  isAdvance: widget.isAdvanceMode,
+                  currentFont: widget.currentFont,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
