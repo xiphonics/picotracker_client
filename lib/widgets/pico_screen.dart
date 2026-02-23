@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../commands.dart';
+import '../screen_constants.dart';
 
 const buildVersion = String.fromEnvironment('BUILD_NUMBER');
 
@@ -58,8 +59,10 @@ class PicoScreenPainter extends CustomPainter {
     // 2. Sequentially process all commands to draw the screen
     final rectPaint = Paint()..isAntiAlias = false;
     final cellBgPaint = Paint()..isAntiAlias = false;
-    final deviceScreenWidth = isAdvance ? 720.0 : 320.0;
-    final deviceScreenHeight = isAdvance ? 720.0 : 240.0;
+    final deviceScreenWidth =
+      (isAdvance ? kAdvanceScreenWidth : kScreenWidth).toDouble();
+    final deviceScreenHeight =
+      (isAdvance ? kAdvanceScreenHeight : kScreenHeight).toDouble();
     final double scaleX = size.width / deviceScreenWidth;
     final double scaleY = size.height / deviceScreenHeight;
 
@@ -194,9 +197,15 @@ class _PicoScreenState extends State<PicoScreen> {
                   style: Theme.of(context).textTheme.headlineSmall),
             ),
           ),
-          SizedBox(
-            width: widget.isAdvanceMode ? 720 : 640,
-            height: widget.isAdvanceMode ? 720 : 480,
+            SizedBox(
+              width: (widget.isAdvanceMode
+                  ? kAdvanceScreenWidth
+                  : kScreenWidth * 2)
+                .toDouble(),
+              height: (widget.isAdvanceMode
+                  ? kAdvanceScreenHeight
+                  : kScreenHeight * 2)
+                .toDouble(),
             child: RepaintBoundary(
               key: widget.repaintBoundaryKey,
               child: CustomPaint(

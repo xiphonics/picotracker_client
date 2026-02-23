@@ -12,6 +12,7 @@ import 'package:picotracker_client/serialportinterface.dart';
 
 import 'commands.dart';
 import 'screenshot_saver.dart';
+import 'screen_constants.dart';
 import 'widgets/pico_screen.dart';
 
 // just simple global for now
@@ -78,6 +79,7 @@ class _MainScreenState extends State<MainScreen> {
   String buildScreenshotName(int width, int height) {
     final now = DateTime.now();
     return "picoTracker-"
+      "${isAdvanceMode ? "Advance-" : ""}"
       "${now.year}"
       "${two(now.month)}"
       "${two(now.day)}"
@@ -103,8 +105,10 @@ class _MainScreenState extends State<MainScreen> {
       return;
     }
 
-    final targetWidth = isAdvanceMode ? 720 : 320;
-    final targetHeight = isAdvanceMode ? 720 : 240;
+    final targetWidth =
+      isAdvanceMode ? kAdvanceScreenWidth : kScreenWidth;
+    final targetHeight =
+      isAdvanceMode ? kAdvanceScreenHeight : kScreenHeight;
     final ratio = min(targetWidth / boundary.size.width, targetHeight / boundary.size.height);
 
     final image = await boundary.toImage(pixelRatio: ratio);
@@ -130,113 +134,132 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.black,
-        body: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 24.0, left: 24.0),
-              child: PicoScreen(
-                _commands,
-                connected: serialHandler.isConnected(),
-                isAdvanceMode: isAdvanceMode,
-                currentFont: currentFont,
-                repaintBoundaryKey: repaintBoundaryKey,
-              ),
-            ),
-            Visibility(
-              visible: !serialHandler.isConnected(),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              isAdvanceMode = false;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18.0, vertical: 10.0),
-                            decoration: BoxDecoration(
-                              color: !isAdvanceMode
-                                  ? const Color.fromARGB(255, 35, 13, 73)
-                                  : const Color.fromARGB(255, 20, 7, 40),
-                              border: Border.all(
-                                color: Colors.amberAccent.withOpacity(!isAdvanceMode ? 1.0 : 0.5),
-                                width: 2,
-                              ),
-                            ),
-                            child: Text(
-                              "picoTracker",
-                              style: TextStyle(
-                                color: !isAdvanceMode
-                                    ? Colors.amberAccent
-                                    : Colors.grey,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              isAdvanceMode = true;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18.0, vertical: 10.0),
-                            decoration: BoxDecoration(
-                              color: isAdvanceMode
-                                  ? const Color.fromARGB(255, 35, 13, 73)
-                                  : const Color.fromARGB(255, 20, 7, 40),
-                              border: Border.all(
-                                color: Colors.amberAccent.withOpacity(isAdvanceMode ? 1.0 : 0.5)  ,
-                                width: 2,
-                              ),
-                            ),
-                            child: Text(
-                              "Advance",
-                              style: TextStyle(
-                                color: isAdvanceMode
-                                    ? Colors.amberAccent
-                                    : Colors.grey,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+    return Shortcuts(
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.keyS, control: true, shift: true):
+            CaptureScreenshotIntent(),
+        SingleActivator(LogicalKeyboardKey.keyS, meta: true, shift: true):
+            CaptureScreenshotIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          CaptureScreenshotIntent: CallbackAction<CaptureScreenshotIntent>(
+            onInvoke: (intent) {
+              captureScreenshot();
+              return null;
+            },
+          ),
+        },
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
+              backgroundColor: Colors.black,
+              body: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24.0, left: 24.0),
+                    child: PicoScreen(
+                      _commands,
+                      connected: serialHandler.isConnected(),
+                      isAdvanceMode: isAdvanceMode,
+                      currentFont: currentFont,
+                      repaintBoundaryKey: repaintBoundaryKey,
                     ),
-                    const SizedBox(height: 16),
-                    MaterialButton(
-                      color: const Color.fromARGB(255, 35, 13, 73),
-                      child: const Padding(
-                        padding: EdgeInsets.all(28.0),
-                        child: Text(
-                          "Connect",
-                          style: TextStyle(
-                            color: Colors.amberAccent,
-                            fontSize: 40,
+                  ),
+                  Visibility(
+                    visible: !serialHandler.isConnected(),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    isAdvanceMode = false;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 18.0, vertical: 10.0),
+                                  decoration: BoxDecoration(
+                                    color: !isAdvanceMode ? kKey : kKeyLow,
+                                    border: Border.all(
+                                      color: Colors.amberAccent.withOpacity(
+                                          !isAdvanceMode ? 1.0 : 0.5),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "picoTracker",
+                                    style: TextStyle(
+                                      color: !isAdvanceMode
+                                          ? Colors.amberAccent
+                                          : Colors.grey,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    isAdvanceMode = true;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 18.0, vertical: 10.0),
+                                  decoration: BoxDecoration(
+                                    color: isAdvanceMode ? kKey : kKeyLow,
+                                    border: Border.all(
+                                      color: Colors.amberAccent.withOpacity(
+                                          isAdvanceMode ? 1.0 : 0.5),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "Advance",
+                                    style: TextStyle(
+                                      color: isAdvanceMode
+                                          ? Colors.amberAccent
+                                          : Colors.grey,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          MaterialButton(
+                            color: kKey,
+                            child: const Padding(
+                              padding: EdgeInsets.all(28.0),
+                              child: Text(
+                                "Connect",
+                                style: TextStyle(
+                                  color: Colors.amberAccent,
+                                  fontSize: 40,
+                                ),
+                              ),
+                            ),
+                            onPressed: () {
+                              serialHandler.chooseSerialDevice();
+                              setState(() {});
+                            },
+                          ),
+                        ],
                       ),
-                      onPressed: () {
-                        serialHandler.chooseSerialDevice();
-                        setState(() {});
-                      },
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ));
+                  ),
+                ],
+              )),
+        ),
+      ),
+    );
   }
 }
