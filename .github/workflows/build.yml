@@ -22,6 +22,10 @@ jobs:
           channel: stable
       - name: Install dependencies
         run: flutter pub get
+      - name: Check Dart formatting
+        run: dart format --output=none --set-exit-if-changed .
+      - name: Run Dart linter
+        run: flutter analyze --fatal-infos
       - name: Build web app
         run: flutter build web --release --dart-define=BUILD_NUMBER=${{ github.run_number }} --base-href /
       - name: Upload Pages artifact
