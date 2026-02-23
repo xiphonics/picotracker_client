@@ -95,41 +95,45 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     isCapturing = true;
+    try {
+      final boundary = repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to capture screenshot')),
+        );
+        return;
+      }
 
-    final boundary = repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-    if (boundary == null) {
-      isCapturing = false;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to capture screenshot')),
-      );
-      return;
-    }
+      final targetWidth =
+        isAdvanceMode ? kAdvanceScreenWidth : kScreenWidth;
+      final targetHeight =
+        isAdvanceMode ? kAdvanceScreenHeight : kScreenHeight;
+      final ratio = min(targetWidth / boundary.size.width, targetHeight / boundary.size.height);
 
-    final targetWidth =
-      isAdvanceMode ? kAdvanceScreenWidth : kScreenWidth;
-    final targetHeight =
-      isAdvanceMode ? kAdvanceScreenHeight : kScreenHeight;
-    final ratio = min(targetWidth / boundary.size.width, targetHeight / boundary.size.height);
+      final image = await boundary.toImage(pixelRatio: ratio);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) {
+        if (!mounted) {
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to capture screenshot')),
+        );
+        return;
+      }
+      final bytes = byteData.buffer.asUint8List();
+      final fileName = buildScreenshotName(targetWidth, targetHeight);
 
-    final image = await boundary.toImage(pixelRatio: ratio);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (byteData == null) {
-      isCapturing = false;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to capture screenshot')),
-      );
-      return;
-    }
-    final bytes = byteData.buffer.asUint8List();
-    final fileName = buildScreenshotName(targetWidth, targetHeight);
-    
-    await savePNG(bytes, fileName: fileName);
-    if (mounted) {
+      await savePNG(bytes, fileName: fileName);
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Saved screenshot: $fileName')),
       );
+    } finally {
+      isCapturing = false;
     }
-    isCapturing = false;
   }
 
   @override
