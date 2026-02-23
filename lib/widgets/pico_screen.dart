@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../commands.dart';
+import '../screen_constants.dart';
 
 const buildVersion = String.fromEnvironment('BUILD_NUMBER');
 
@@ -58,8 +59,10 @@ class PicoScreenPainter extends CustomPainter {
     // 2. Sequentially process all commands to draw the screen
     final rectPaint = Paint()..isAntiAlias = false;
     final cellBgPaint = Paint()..isAntiAlias = false;
-    final deviceScreenWidth = isAdvance ? 720.0 : 320.0;
-    final deviceScreenHeight = isAdvance ? 720.0 : 240.0;
+    final deviceScreenWidth =
+      (isAdvance ? kAdvanceScreenWidth : kScreenWidth).toDouble();
+    final deviceScreenHeight =
+      (isAdvance ? kAdvanceScreenHeight : kScreenHeight).toDouble();
     final double scaleX = size.width / deviceScreenWidth;
     final double scaleY = size.height / deviceScreenHeight;
 
@@ -166,12 +169,14 @@ class PicoScreen extends StatefulWidget {
   final bool connected;
   final bool isAdvanceMode;
   final int currentFont;
+  final GlobalKey repaintBoundaryKey;
 
   const PicoScreen(this.commands,
       {super.key,
       required this.connected,
       required this.isAdvanceMode,
-      required this.currentFont});
+      required this.currentFont,
+      required this.repaintBoundaryKey});
 
   @override
   State<PicoScreen> createState() => _PicoScreenState();
@@ -180,28 +185,40 @@ class PicoScreen extends StatefulWidget {
 class _PicoScreenState extends State<PicoScreen> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Visibility(
-          visible: !widget.connected,
-          child: Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Text("picoTracker Client  [build $buildVersion]",
-                style: Theme.of(context).textTheme.headlineSmall),
-          ),
-        ),
-        SizedBox(
-          width: widget.isAdvanceMode ? 720 : 640,
-          height: widget.isAdvanceMode ? 720 : 480,
-          child: CustomPaint(
-            painter: PicoScreenPainter(
-              commands: widget.commands,
-              isAdvance: widget.isAdvanceMode,
-              currentFont: widget.currentFont,
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Visibility(
+            visible: !widget.connected,
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Text("picoTracker Client  [build $buildVersion]",
+                  style: Theme.of(context).textTheme.headlineSmall),
             ),
           ),
-        ),
-      ],
+            SizedBox(
+              width: (widget.isAdvanceMode
+                  ? kAdvanceScreenWidth
+                  : kScreenWidth * 2)
+                .toDouble(),
+              height: (widget.isAdvanceMode
+                  ? kAdvanceScreenHeight
+                  : kScreenHeight * 2)
+                .toDouble(),
+            child: RepaintBoundary(
+              key: widget.repaintBoundaryKey,
+              child: CustomPaint(
+                painter: PicoScreenPainter(
+                  commands: widget.commands,
+                  isAdvance: widget.isAdvanceMode,
+                  currentFont: widget.currentFont,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
