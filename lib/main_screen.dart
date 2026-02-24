@@ -79,14 +79,14 @@ class _MainScreenState extends State<MainScreen> {
   String buildScreenshotName(int width, int height) {
     final now = DateTime.now();
     return "picoTracker-"
-      "${isAdvanceMode ? "Advance-" : ""}"
-      "${now.year}"
-      "${two(now.month)}"
-      "${two(now.day)}"
-      "${two(now.hour)}"
-      "${two(now.minute)}"
-      "${two(now.second)}"
-      ".png";
+        "${isAdvanceMode ? "Advance-" : ""}"
+        "${now.year}"
+        "${two(now.month)}"
+        "${two(now.day)}"
+        "${two(now.hour)}"
+        "${two(now.minute)}"
+        "${two(now.second)}"
+        ".png";
   }
 
   Future<void> captureScreenshot() async {
@@ -96,7 +96,8 @@ class _MainScreenState extends State<MainScreen> {
 
     isCapturing = true;
     try {
-      final boundary = repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary = repaintBoundaryKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
       if (boundary == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to capture screenshot')),
@@ -104,11 +105,10 @@ class _MainScreenState extends State<MainScreen> {
         return;
       }
 
-      final targetWidth =
-        isAdvanceMode ? kAdvanceScreenWidth : kScreenWidth;
-      final targetHeight =
-        isAdvanceMode ? kAdvanceScreenHeight : kScreenHeight;
-      final ratio = min(targetWidth / boundary.size.width, targetHeight / boundary.size.height);
+      final targetWidth = isAdvanceMode ? kAdvanceScreenWidth : kScreenWidth;
+      final targetHeight = isAdvanceMode ? kAdvanceScreenHeight : kScreenHeight;
+      final ratio = min(targetWidth / boundary.size.width,
+          targetHeight / boundary.size.height);
 
       final image = await boundary.toImage(pixelRatio: ratio);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -192,8 +192,7 @@ class _MainScreenState extends State<MainScreen> {
                                     color: !isAdvanceMode ? kKey : kKeyLow,
                                     border: Border.all(
                                       color: Colors.amberAccent.withValues(
-                                          alpha:
-                                          !isAdvanceMode ? 1.0 : 0.5),
+                                          alpha: !isAdvanceMode ? 1.0 : 0.5),
                                       width: 2,
                                     ),
                                   ),
@@ -222,8 +221,7 @@ class _MainScreenState extends State<MainScreen> {
                                     color: isAdvanceMode ? kKey : kKeyLow,
                                     border: Border.all(
                                       color: Colors.amberAccent.withValues(
-                                          alpha:
-                                          isAdvanceMode ? 1.0 : 0.5),
+                                          alpha: isAdvanceMode ? 1.0 : 0.5),
                                       width: 2,
                                     ),
                                   ),

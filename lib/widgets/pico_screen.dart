@@ -60,9 +60,9 @@ class PicoScreenPainter extends CustomPainter {
     final rectPaint = Paint()..isAntiAlias = false;
     final cellBgPaint = Paint()..isAntiAlias = false;
     final deviceScreenWidth =
-      (isAdvance ? kAdvanceScreenWidth : kScreenWidth).toDouble();
+        (isAdvance ? kAdvanceScreenWidth : kScreenWidth).toDouble();
     final deviceScreenHeight =
-      (isAdvance ? kAdvanceScreenHeight : kScreenHeight).toDouble();
+        (isAdvance ? kAdvanceScreenHeight : kScreenHeight).toDouble();
     final double scaleX = size.width / deviceScreenWidth;
     final double scaleY = size.height / deviceScreenHeight;
 
@@ -197,14 +197,13 @@ class _PicoScreenState extends State<PicoScreen> {
                   style: Theme.of(context).textTheme.headlineSmall),
             ),
           ),
-            SizedBox(
-              width: (widget.isAdvanceMode
-                  ? kAdvanceScreenWidth
-                  : kScreenWidth * 2)
-                .toDouble(),
-              height: (widget.isAdvanceMode
-                  ? kAdvanceScreenHeight
-                  : kScreenHeight * 2)
+          SizedBox(
+            width:
+                (widget.isAdvanceMode ? kAdvanceScreenWidth : kScreenWidth * 2)
+                    .toDouble(),
+            height: (widget.isAdvanceMode
+                    ? kAdvanceScreenHeight
+                    : kScreenHeight * 2)
                 .toDouble(),
             child: RepaintBoundary(
               key: widget.repaintBoundaryKey,
