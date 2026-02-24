@@ -191,7 +191,8 @@ class _MainScreenState extends State<MainScreen> {
                                   decoration: BoxDecoration(
                                     color: !isAdvanceMode ? kKey : kKeyLow,
                                     border: Border.all(
-                                      color: Colors.amberAccent.withOpacity(
+                                      color: Colors.amberAccent.withValues(
+                                          alpha:
                                           !isAdvanceMode ? 1.0 : 0.5),
                                       width: 2,
                                     ),
@@ -220,7 +221,8 @@ class _MainScreenState extends State<MainScreen> {
                                   decoration: BoxDecoration(
                                     color: isAdvanceMode ? kKey : kKeyLow,
                                     border: Border.all(
-                                      color: Colors.amberAccent.withOpacity(
+                                      color: Colors.amberAccent.withValues(
+                                          alpha:
                                           isAdvanceMode ? 1.0 : 0.5),
                                       width: 2,
                                     ),
