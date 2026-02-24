@@ -13,6 +13,7 @@ dependencies:
   flutter_libserialport: ^0.4.0
   webserial: ^1.2.0
   udev: ^0.0.3
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

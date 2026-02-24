@@ -38,7 +38,6 @@ class SerialPortHandler {
     }
   }
 
-  // TODO:
   bool isAdvance() => false;
 
   void _initPort() {

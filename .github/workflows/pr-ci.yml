@@ -1,0 +1,25 @@
+name: PR CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Check Dart formatting
+        run: dart format --output=none --set-exit-if-changed .
+      - name: Run Dart linter
+        run: flutter analyze --fatal-infos
+      - name: Build web app
+        run: flutter build web --release --dart-define=BUILD_NUMBER=${{ github.run_number }} --base-href /
