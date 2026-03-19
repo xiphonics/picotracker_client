@@ -94,6 +94,8 @@ class _MainScreenState extends State<MainScreen> {
       return;
     }
 
+    debugPrint("Starting screenshot capture! ====>");
+
     isCapturing = true;
     try {
       final boundary = repaintBoundaryKey.currentContext?.findRenderObject()
@@ -149,8 +151,7 @@ class _MainScreenState extends State<MainScreen> {
         actions: <Type, Action<Intent>>{
           CaptureScreenshotIntent: CallbackAction<CaptureScreenshotIntent>(
             onInvoke: (intent) {
-              captureScreenshot();
-              return null;
+              return captureScreenshot();
             },
           ),
         },
